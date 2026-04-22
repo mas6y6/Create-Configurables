@@ -1,0 +1,6 @@
+{
+  "itemGroup.configureablecrushingwheel": "Example Mod Tab",
+  "block.configureablecrushingwheel.example_block": "Example Block",
+  "item.configureablecrushingwheel.example_item": "Example Item",
+  "message.configureablecrushingwheel.link_failed": "Cannot link these crushing wheels"
+}
