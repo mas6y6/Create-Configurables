@@ -1,11 +1,14 @@
 package com.mas6y6.configureablecrushingwheel.server.world;
 
+import com.mas6y6.configureablecrushingwheel.Configureablecrushingwheel;
 import com.mas6y6.configureablecrushingwheel.server.CrushingWheelsLinkData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,8 +30,8 @@ public class LinkedCrushingWheelsData extends SavedData {
         for (Tag t : listTag) {
             CompoundTag linkTag = (CompoundTag) t;
 
-            BlockPos posA = BlockPos.of(linkTag.getInt("a"));
-            BlockPos posB = BlockPos.of(linkTag.getInt("b"));
+            BlockPos posA = BlockPos.of(linkTag.getLong("a"));
+            BlockPos posB = BlockPos.of(linkTag.getLong("b"));
 
             data.linkedCrushingWheels.add(new CrushingWheelsLinkData(posA, posB));
         }
@@ -55,8 +58,21 @@ public class LinkedCrushingWheelsData extends SavedData {
     }
 
     public void link(BlockPos a, BlockPos b) {
+        if (getLink(a) != null) unlink(a);
+        if (getLink(b) != null) unlink(b);
         linkedCrushingWheels.add(new CrushingWheelsLinkData(a, b));
         setDirty();
+    }
+
+    public void unlink(BlockPos pos) {
+        boolean removed = linkedCrushingWheels.removeIf(link ->
+                link.getPos1().equals(pos) || link.getPos2().equals(pos)
+        );
+
+        if (removed) {
+            setDirty();
+            Configureablecrushingwheel.LOGGER.debug("Unlinked {} and marked data dirty", pos);
+        }
     }
 
     public CrushingWheelsLinkData getLink(BlockPos pos) {
@@ -66,5 +82,14 @@ public class LinkedCrushingWheelsData extends SavedData {
             }
         }
         return null;
+    }
+
+    public static LinkedCrushingWheelsData get(ServerLevel level) {
+        ServerLevel overworld = level.getServer().overworld();
+
+        return overworld.getDataStorage().computeIfAbsent(
+                new SavedData.Factory<>(LinkedCrushingWheelsData::create, LinkedCrushingWheelsData::load),
+                "linked_crushing_wheels"
+        );
     }
 }

@@ -2,5 +2,10 @@
   "itemGroup.configureablecrushingwheel": "Example Mod Tab",
   "block.configureablecrushingwheel.example_block": "Example Block",
   "item.configureablecrushingwheel.example_item": "Example Item",
-  "message.configureablecrushingwheel.link_failed": "Cannot link these crushing wheels"
+  "message.configureablecrushingwheel.link_failed": "Cannot link these crushing wheels",
+  "message.configureablecrushingwheel.already_linked": "This crushing wheel is already linked to another crushing wheel!",
+  "gui.configureablecrushingwheel.title": "Configure Crushing Wheels",
+  "gui.configureablecrushingwheel.conflicting_text": "Conflicting Recipes",
+  "gui.configureablecrushingwheel.no_conflict": "There are no conflicts. Lucky you!",
+  "gui.configureablecrushingwheel.conflicting_recipes": "Conflicting Recipes for %s:"
 }
