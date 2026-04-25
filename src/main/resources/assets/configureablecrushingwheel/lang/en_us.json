@@ -7,5 +7,7 @@
   "gui.configureablecrushingwheel.title": "Configure Crushing Wheels",
   "gui.configureablecrushingwheel.conflicting_text": "Conflicting Recipes",
   "gui.configureablecrushingwheel.no_conflict": "There are no conflicts. Lucky you!",
-  "gui.configureablecrushingwheel.conflicting_recipes": "Conflicting Recipes for %s:"
+  "gui.configureablecrushingwheel.conflicting_recipes": "Conflicting Recipes for %s:",
+  "gui.configureablecrushingwheel.select_recipe": "Select Recipe",
+  "gui.configureablecrushingwheel.configure": "Configure"
 }

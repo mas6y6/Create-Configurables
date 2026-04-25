@@ -36,5 +36,7 @@ public class Configureablecrushingwheel {
         payloadRegistrar.playToClient(OpenRecipeGuiPacket.TYPE,OpenRecipeGuiPacket.STREAM_CODEC, PacketHandler::OpenRecipeGuiPacket);
         payloadRegistrar.playToServer(GetConflictingRecipesPacket.TYPE,GetConflictingRecipesPacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesPacket);
         payloadRegistrar.playToClient(GetConflictingRecipesResponsePacket.TYPE,GetConflictingRecipesResponsePacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesResponsePacket);
+        payloadRegistrar.playToClient(GetCrushingWheelConfigResponsePacket.TYPE,GetCrushingWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigResponsePacket);
+        payloadRegistrar.playToServer(GetCrushingWheelConfigPacket.TYPE,GetCrushingWheelConfigPacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigPacket);
     }
 }

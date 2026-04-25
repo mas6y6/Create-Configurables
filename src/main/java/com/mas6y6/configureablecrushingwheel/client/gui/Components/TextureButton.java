@@ -20,6 +20,11 @@ public class TextureButton extends AbstractWidget {
     private int disabledU;
     private int disabledV;
 
+    private int pressedU;
+    private int pressedV;
+
+    private boolean pressed = false;
+
     private final OnPress onPress;
 
     public interface OnPress {
@@ -31,6 +36,7 @@ public class TextureButton extends AbstractWidget {
                          int u, int v,
                          int hoverU, int hoverV,
                          int disabledU, int disabledV,
+                         int pressedU, int pressedV,
                          OnPress onPress) {
         super(x, y, w, h, Component.empty());
         this.texture = texture;
@@ -44,6 +50,9 @@ public class TextureButton extends AbstractWidget {
         this.disabledU = disabledU;
         this.disabledV = disabledV;
 
+        this.pressedU = pressedU;
+        this.pressedV = pressedV;
+
         this.onPress = onPress;
     }
 
@@ -55,6 +64,7 @@ public class TextureButton extends AbstractWidget {
         this(x, y, w, h, texture,
                 u, v,
                 hoverU, hoverV,
+                u, v,
                 u, v,
                 onPress);
     }
@@ -83,6 +93,11 @@ public class TextureButton extends AbstractWidget {
         this.disabledV = v;
     }
 
+    public void setPressed(int u, int v) {
+        this.pressedU = u;
+        this.pressedV = v;
+    }
+
     public void enable() {
         this.active = true;
     }
@@ -94,8 +109,8 @@ public class TextureButton extends AbstractWidget {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.active && this.visible && this.isMouseOver(mouseX, mouseY) && button == 0) {
+            this.pressed = true;
             this.playDownSound(Minecraft.getInstance().getSoundManager());
-            this.onPress.onPress(this);
             return true;
         }
         return false;
@@ -103,6 +118,14 @@ public class TextureButton extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && this.pressed) {
+            this.pressed = false;
+
+            if (this.isMouseOver(mouseX, mouseY)) {
+                this.onPress.onPress(this);
+            }
+            return true;
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -114,6 +137,11 @@ public class TextureButton extends AbstractWidget {
         if (!this.active) {
             currentU = this.disabledU;
             currentV = this.disabledV;
+
+        } else if (this.pressed) {
+            currentU = this.pressedU;
+            currentV = this.pressedV;
+
         } else if (this.isHovered()) {
             currentU = this.hoverU;
             currentV = this.hoverV;

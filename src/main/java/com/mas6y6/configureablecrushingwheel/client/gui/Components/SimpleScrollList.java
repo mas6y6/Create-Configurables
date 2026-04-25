@@ -13,9 +13,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static net.minecraft.util.Mth.clamp;
+
+/*
+
+BEFORE YOU GET MAD AT ME!!!
+yes this entire thing is vibe coded. I hate making UI elements from scratch, so I kinda had to vibe code this entire thing.
+
+I am sorry for any developers that need to make their own UI elements.
+
+*/
 
 public class SimpleScrollList extends AbstractWidget {
 
@@ -32,6 +42,8 @@ public class SimpleScrollList extends AbstractWidget {
             List<Component> tooltip
     ) {}
 
+    public record EntryContext(SimpleScrollList list, int index, Entry entry) {}
+
     private final List<Entry> items = new ArrayList<>();
 
     private float scrollAmount;
@@ -39,7 +51,7 @@ public class SimpleScrollList extends AbstractWidget {
     private boolean isDragging;
 
     private Consumer<Integer> onSelect;
-    private Consumer<Entry> onSelectEntry;
+    private BiConsumer<Integer, EntryContext> onSelectEntry;
 
     private ResourceLocation listBackground;
     private int listBackgroundColor = 0xFF000000;
@@ -76,7 +88,7 @@ public class SimpleScrollList extends AbstractWidget {
         this.onSelect = onSelect;
     }
 
-    public void setOnSelectEntry(Consumer<Entry> onSelectEntry) {
+    public void setOnSelectEntry(BiConsumer<Integer, EntryContext> onSelectEntry) {
         this.onSelectEntry = onSelectEntry;
     }
 
@@ -88,6 +100,12 @@ public class SimpleScrollList extends AbstractWidget {
         return (selectedIndex >= 0 && selectedIndex < items.size())
                 ? items.get(selectedIndex)
                 : null;
+    }
+
+    public void updateEntry(int index, Entry newEntry) {
+        if (index >= 0 && index < items.size()) {
+            items.set(index, newEntry);
+        }
     }
 
     // =========================
@@ -176,13 +194,19 @@ public class SimpleScrollList extends AbstractWidget {
                 float scale = entry.itemScale();
                 int size = (int) (16 * scale);
 
+                Minecraft mc = Minecraft.getInstance();
+
                 for (int j = 0; j < entry.items().size(); j++) {
                     ItemStack stack = entry.items().get(j);
 
                     gg.pose().pushPose();
                     gg.pose().translate(getX() + 4 + j * (size + 2), currentY + 2, 0);
                     gg.pose().scale(scale, scale, 1);
-                    gg.renderFakeItem(stack, 0, 0);
+
+                    gg.renderItem(stack, 0, 0);
+
+                    gg.renderItemDecorations(mc.font, stack, 0, 0);
+
                     gg.pose().popPose();
                 }
 
@@ -192,7 +216,12 @@ public class SimpleScrollList extends AbstractWidget {
 
                 for (int j = 0; j < entry.textures().size(); j++) {
                     ResourceLocation tex = entry.textures().get(j);
-                    gg.blit(tex, getX() + 4 + j * (size + 2), currentY + 2, 0, 0, size, size, size, size);
+                    gg.blit(tex,
+                            getX() + 4 + j * (size + 2),
+                            currentY + 2,
+                            0, 0,
+                            size, size,
+                            size, size);
                 }
             }
 
@@ -289,7 +318,10 @@ public class SimpleScrollList extends AbstractWidget {
                 selectedIndex = i;
 
                 if (onSelect != null) onSelect.accept(i);
-                if (onSelectEntry != null) onSelectEntry.accept(entry);
+
+                if (onSelectEntry != null) {
+                    onSelectEntry.accept(i, new EntryContext(this, i, entry));
+                }
 
                 if (changed) {
                     playDownSound(Minecraft.getInstance().getSoundManager());

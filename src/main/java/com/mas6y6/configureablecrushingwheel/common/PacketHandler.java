@@ -21,4 +21,16 @@ public class PacketHandler {
             com.mas6y6.configureablecrushingwheel.client.PacketHandle.getConflictingRecipesResponsePacket(packet, iPayloadContext);
         });
     }
+
+    public static void GetCrushingWheelConfigResponsePacket(GetCrushingWheelConfigResponsePacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.client.PacketHandle.GetCrushingWheelConfigResponsePacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetCrushingWheelConfigPacket(GetCrushingWheelConfigPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetCrushingWheelConfigPacket(packet, iPayloadContext);
+        });
+    }
 }
