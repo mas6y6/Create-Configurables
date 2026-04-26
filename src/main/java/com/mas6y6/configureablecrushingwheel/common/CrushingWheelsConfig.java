@@ -28,4 +28,12 @@ public class CrushingWheelsConfig  {
                 return new CrushingWheelsConfig(config, uuid);
             }
     );
+
+    public void setConfig(ResourceLocation itemId, ResourceLocation recipeId) {
+        this.config.put(itemId, recipeId);
+    }
+
+    public void removeConfig(ResourceLocation itemId) {
+        this.config.remove(itemId);
+    }
 }

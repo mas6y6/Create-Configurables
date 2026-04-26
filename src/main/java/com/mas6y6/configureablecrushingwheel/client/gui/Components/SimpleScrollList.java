@@ -1,6 +1,7 @@
 package com.mas6y6.configureablecrushingwheel.client.gui.Components;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -10,9 +11,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -29,6 +33,10 @@ I am sorry for any developers that need to make their own UI elements.
 
 public class SimpleScrollList extends AbstractWidget {
 
+    // =========================
+    // ENTRY
+    // =========================
+
     public record Entry(
             Object id,
             Component text,
@@ -39,77 +47,134 @@ public class SimpleScrollList extends AbstractWidget {
             int height,
             ResourceLocation background,
             int backgroundColor,
-            List<Component> tooltip
-    ) {}
+            List<Component> tooltip,
+            Consumer<EntryContext> onClick
+    ) {
+        public Entry withBackgroundColor(int color) {
+            return new Entry(id, text, items, textures, itemScale, showText,
+                    height, background, color, tooltip, onClick);
+        }
 
-    public record EntryContext(SimpleScrollList list, int index, Entry entry) {}
+        public Entry withHeight(int newHeight) {
+            return new Entry(id, text, items, textures, itemScale, showText,
+                    newHeight, background, backgroundColor, tooltip, onClick);
+        }
+    }
 
-    private final List<Entry> items = new ArrayList<>();
+    public record EntryContext(SimpleScrollList list, Object id, Entry entry) {
+        public void update(Entry newEntry) {
+            list.updateEntry(id, newEntry);
+        }
+    }
+
+    // =========================
+    // STORAGE
+    // =========================
+
+    private final LinkedHashMap<Object, Entry> items = new LinkedHashMap<>();
 
     private float scrollAmount;
-    private int selectedIndex = -1;
+
+    private float scrollVelocity = 0;
+    private boolean draggingScrollbar = false;
+
+    private double lastMouseY = 0;
+
+    private Object selectedId = null;
+
     private boolean isDragging;
 
-    private Consumer<Integer> onSelect;
-    private BiConsumer<Integer, EntryContext> onSelectEntry;
+    private Consumer<Object> onSelect;
+    private Consumer<EntryContext> onSelectEntry;
+
+    // =========================
+    // STYLE
+    // =========================
 
     private ResourceLocation listBackground;
     private int listBackgroundColor = 0xFF000000;
+
     private ResourceLocation listBorder;
     private int listBorderColor = 0xFFFFFFFF;
+
+    // =========================
+    // CONSTRUCTOR
+    // =========================
 
     public SimpleScrollList(int x, int y, int width, int height) {
         super(x, y, width, height, Component.empty());
     }
 
     // =========================
-    // FLUENT API ENTRY POINT
+    // ENTRY MANAGEMENT
     // =========================
+
+    private List<Entry> orderedEntries() {
+        return new ArrayList<>(items.values());
+    }
 
     public EntryBuilder entry(Object id) {
         return new EntryBuilder(this, id);
     }
 
     void addEntry(Entry entry) {
-        items.add(entry);
+        items.put(entry.id(), entry);
+    }
+
+    public void updateEntry(Object id, Entry newEntry) {
+        if (items.containsKey(id)) {
+            items.put(id, newEntry.withHeight(calculateEntryHeight(newEntry)));
+        }
+    }
+
+    public void removeEntry(Object id) {
+        items.remove(id);
+        if (Objects.equals(selectedId, id)) {
+            selectedId = null;
+        }
     }
 
     public void clear() {
         items.clear();
-        selectedIndex = -1;
+        selectedId = null;
         scrollAmount = 0;
+    }
+
+    public void getEntry(Object id, Consumer<Entry> consumer) {
+        Entry e = items.get(id);
+        if (e != null) consumer.accept(e);
+    }
+
+    public void getAllEntries(BiConsumer<Object, Entry> consumer) {
+        items.forEach(consumer);
     }
 
     // =========================
     // SELECTION
     // =========================
 
-    public void setOnSelect(Consumer<Integer> onSelect) {
+    public void setOnSelect(Consumer<Object> onSelect) {
         this.onSelect = onSelect;
     }
 
-    public void setOnSelectEntry(BiConsumer<Integer, EntryContext> onSelectEntry) {
+    public void setOnSelectEntry(Consumer<EntryContext> onSelectEntry) {
         this.onSelectEntry = onSelectEntry;
     }
 
-    public int getSelectedIndex() {
-        return selectedIndex;
+    public Object getSelectedId() {
+        return selectedId;
     }
 
     public Entry getSelectedItem() {
-        return (selectedIndex >= 0 && selectedIndex < items.size())
-                ? items.get(selectedIndex)
-                : null;
+        return items.get(selectedId);
     }
 
-    public void updateEntry(int index, Entry newEntry) {
-        if (index >= 0 && index < items.size()) {
-            items.set(index, newEntry);
-        }
+    public void setSelectedId(@Nullable Object selectedId) {
+        this.selectedId = selectedId;
     }
 
     // =========================
-    // STYLE
+    // STYLE API (FIXED)
     // =========================
 
     public void setListBackground(ResourceLocation texture, int color) {
@@ -119,6 +184,7 @@ public class SimpleScrollList extends AbstractWidget {
 
     public void setListBackground(int color) {
         this.listBackgroundColor = color;
+        this.listBackground = null;
     }
 
     public void setListBorder(ResourceLocation texture, int color) {
@@ -128,14 +194,25 @@ public class SimpleScrollList extends AbstractWidget {
 
     public void setListBorder(int color) {
         this.listBorderColor = color;
+        this.listBorder = null;
     }
 
     // =========================
-    // RENDERING
+    // RENDER
     // =========================
 
     @Override
     public void renderWidget(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
+        updateMomentum();
+
+        List<Entry> list = orderedEntries();
+
+        boolean scrollbar = needsScrollbar();
+
+        int contentRight = getX() + width - (scrollbar ? 7 : 0);
+        int contentW = contentRight - getX();
+
+        int contentBottom = getY() + height;
 
         // background
         if (listBackground != null) {
@@ -152,93 +229,93 @@ public class SimpleScrollList extends AbstractWidget {
         }
 
         int totalHeight = 0;
-        for (Entry e : items) totalHeight += e.height();
+        for (Entry e : list) totalHeight += e.height();
 
-        gg.enableScissor(getX(), getY(), getX() + width, getY() + height);
+        gg.enableScissor(getX(), getY(), contentRight, getY() + height);
 
         int currentY = getY() - (int) scrollAmount;
 
-        for (int i = 0; i < items.size(); i++) {
-            Entry entry = items.get(i);
+        for (Entry entry : list) {
             int h = entry.height();
 
-            if (currentY + h < getY()) {
-                currentY += h;
-                continue;
-            }
-            if (currentY > getY() + height) {
+            if (currentY + h < getY() || currentY > getY() + height) {
                 currentY += h;
                 continue;
             }
 
             boolean hovered =
-                    mouseX >= getX() && mouseX < getX() + width - 6 &&
+                    mouseX >= getX() + 1 && mouseX < contentRight - 1 &&
                             mouseY >= currentY && mouseY < currentY + h;
 
-            // entry background
-            if (entry.background() != null) {
-                gg.blit(entry.background(), getX() + 1, currentY, 0, 0, width - 7, h, width - 7, h);
-            } else if (entry.backgroundColor() != 0) {
-                gg.fill(getX() + 1, currentY, getX() + width - 7, currentY + h, entry.backgroundColor());
-            }
+            boolean selected = Objects.equals(selectedId, entry.id());
 
-            // selection / hover
-            if (i == selectedIndex) {
-                gg.fill(getX() + 1, currentY, getX() + width - 7, currentY + h, 0x88FFFFFF);
-            } else if (hovered) {
-                gg.fill(getX() + 1, currentY, getX() + width - 7, currentY + h, 0x44FFFFFF);
+            int baseColor = selected ? 0xFF748c5D : entry.backgroundColor();
+            int bgColor = hovered
+                    ? brightenColor(baseColor != 0 ? baseColor : 0xFF444444, baseColor != 0 ? 0.18f : 0.08f)
+                    : baseColor;
+
+            int rowW = contentW - 2;
+
+            if (entry.background() != null) {
+                gg.blit(entry.background(),
+                        getX() + 1,
+                        currentY,
+                        0, 0,
+                        rowW,
+                        h,
+                        rowW,
+                        h);
+            } else {
+                gg.fill(getX() + 1, currentY,
+                        getX() + 1 + rowW,
+                        currentY + h,
+                        bgColor);
             }
 
             // items
-            if (entry.items() != null && !entry.items().isEmpty()) {
+            if (entry.items() != null) {
                 float scale = entry.itemScale();
                 int size = (int) (16 * scale);
 
                 Minecraft mc = Minecraft.getInstance();
 
-                for (int j = 0; j < entry.items().size(); j++) {
-                    ItemStack stack = entry.items().get(j);
+                for (int i = 0; i < entry.items().size(); i++) {
+                    ItemStack stack = entry.items().get(i);
 
                     gg.pose().pushPose();
-                    gg.pose().translate(getX() + 4 + j * (size + 2), currentY + 2, 0);
+                    gg.pose().translate(getX() + 4 + i * (size + 2), currentY + 2, 0);
                     gg.pose().scale(scale, scale, 1);
 
                     gg.renderItem(stack, 0, 0);
-
                     gg.renderItemDecorations(mc.font, stack, 0, 0);
 
                     gg.pose().popPose();
-                }
-
-            } else if (entry.textures() != null && !entry.textures().isEmpty()) {
-                float scale = entry.itemScale();
-                int size = (int) (16 * scale);
-
-                for (int j = 0; j < entry.textures().size(); j++) {
-                    ResourceLocation tex = entry.textures().get(j);
-                    gg.blit(tex,
-                            getX() + 4 + j * (size + 2),
-                            currentY + 2,
-                            0, 0,
-                            size, size,
-                            size, size);
                 }
             }
 
             // text
             if (entry.showText()) {
-                int maxWidth = width - 12;
+                Font font = Minecraft.getInstance().font;
+
+                int maxWidth = calculateTextWidth(entry);
+
                 List<FormattedCharSequence> lines =
-                        Minecraft.getInstance().font.split(entry.text(), maxWidth);
+                        font.split(entry.text(), maxWidth);
 
-                int itemSize = (int) (16 * entry.itemScale());
-                int textY = currentY + itemSize + 4;
+                int textX = getX() + 6;
+                if (entry.items() != null && !entry.items().isEmpty()) {
+                    int itemSize = (int) (16 * entry.itemScale());
+                    textX += entry.items().size() * (itemSize + 2) + 2;
+                }
 
-                for (int j = 0; j < lines.size(); j++) {
-                    gg.drawString(Minecraft.getInstance().font,
-                            lines.get(j),
-                            getX() + 6,
-                            textY + j * 10,
+                int textHeight = lines.size() * 10;
+                int textY = currentY + Math.max(2, (h - textHeight) / 2);
+
+                for (int i = 0; i < lines.size(); i++) {
+                    gg.drawString(font,
+                            lines.get(i),
+                            textX,
+                            textY + i * 10,
                             0xFFFFFF,
                             false);
                 }
@@ -249,31 +326,17 @@ public class SimpleScrollList extends AbstractWidget {
 
         gg.disableScissor();
 
-        // tooltips
-        currentY = getY() - (int) scrollAmount;
-
-        for (int i = 0; i < items.size(); i++) {
-            Entry entry = items.get(i);
-            int h = entry.height();
-
-            boolean hovered =
-                    mouseX >= getX() && mouseX < getX() + width - 6 &&
-                            mouseY >= currentY && mouseY < currentY + h;
-
-            if (hovered && entry.tooltip() != null && !entry.tooltip().isEmpty()) {
-                gg.renderComponentTooltip(Minecraft.getInstance().font, entry.tooltip(), mouseX, mouseY);
-            }
-
-            currentY += h;
-        }
-
         // scrollbar
-        if (totalHeight > height) {
+        if (scrollbar && totalHeight > height) {
+
             int barX = getX() + width - 6;
             int barW = 4;
 
-            int barH = Math.max(10, (int) ((float) height * height / totalHeight));
-            int barY = getY() + (int) ((height - barH) * (scrollAmount / (totalHeight - height)));
+            int barH = Math.max(10,
+                    (int) ((float) height * height / totalHeight));
+
+            int barY = getY() + (int)
+                    ((height - barH) * (scrollAmount / (float) (totalHeight - height)));
 
             gg.fill(barX, getY(), barX + barW, getY() + height, 0x44FFFFFF);
             gg.fill(barX, barY, barX + barW, barY + barH, 0xFFFFFFFF);
@@ -284,93 +347,232 @@ public class SimpleScrollList extends AbstractWidget {
     // INPUT
     // =========================
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!active || !visible) return false;
+    private int getTextOffset(Entry entry, int mouseX, boolean hovered, int x, int y, int width) {
+        Font font = Minecraft.getInstance().font;
 
-        int scrollbarX = getX() + width - 6;
+        int textWidth = font.width(entry.text());
 
-        if (mouseX >= scrollbarX && mouseX < getX() + width
-                && mouseY >= getY() && mouseY < getY() + height) {
-
-            int total = 0;
-            for (Entry e : items) total += e.height();
-
-            if (total > height) {
-                isDragging = true;
-                updateScrolling(mouseY);
-                return true;
-            }
+        if (textWidth <= width - 10) {
+            return 0;
         }
 
-        if (mouseX < getX() || mouseX >= scrollbarX
+        // only animate when hovered (like vanilla buttons)
+        if (!hovered) {
+            return 0;
+        }
+
+        long time = System.currentTimeMillis() / 10;
+
+        int overflow = textWidth - (width - 10);
+
+        return (int)(Math.sin(time * 0.05) * overflow * 0.5 + overflow * 0.5);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        draggingScrollbar = false;
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private void updateMomentum() {
+        List<Entry> list = orderedEntries();
+
+        int totalHeight = 0;
+        for (Entry e : list) totalHeight += e.height();
+
+        float maxScroll = Math.max(0, totalHeight - height);
+
+        // apply velocity
+        scrollAmount += scrollVelocity;
+
+        // friction (Create-style feel)
+        scrollVelocity *= 0.85f;
+
+        // stop tiny jitter
+        if (Math.abs(scrollVelocity) < 0.01f) {
+            scrollVelocity = 0;
+        }
+
+        // clamp
+        scrollAmount = clamp(scrollAmount, 0, maxScroll);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (draggingScrollbar) {
+
+            List<Entry> list = orderedEntries();
+
+            int totalHeight = 0;
+            for (Entry e : list) totalHeight += e.height();
+
+            float maxScroll = Math.max(0, totalHeight - height);
+
+            // convert mouse to scroll percent
+            float percent = (float)(mouseY - getY()) / (float)height;
+
+            scrollAmount = clamp(
+                    percent * totalHeight - (height * 0.5f),
+                    0,
+                    maxScroll
+            );
+
+            return true;
+        }
+
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    private void updateScrolling(double mouseY) {
+        List<Entry> list = orderedEntries();
+
+        int totalHeight = 0;
+        for (Entry e : list) {
+            totalHeight += e.height();
+        }
+
+        if (totalHeight <= height) {
+            scrollAmount = 0;
+            return;
+        }
+
+        float percent = (float) (mouseY - getY()) / (float) height;
+
+        scrollAmount = clamp(
+                percent * totalHeight - (height * 0.5f),
+                0,
+                Math.max(0, totalHeight - height)
+        );
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (mouseX < getX() || mouseX >= getX() + width
                 || mouseY < getY() || mouseY >= getY() + height) {
             return false;
         }
+
+        int barX = getX() + width - 6;
+
+        if (needsScrollbar()
+                && mouseX >= barX
+                && mouseX < getX() + width
+                && mouseY >= getY()
+                && mouseY < getY() + height) {
+
+            draggingScrollbar = true;
+            lastMouseY = mouseY;
+            return true;
+        }
+
+        List<Entry> list = orderedEntries();
+
         int currentY = getY() - (int) scrollAmount;
 
-        for (int i = 0; i < items.size(); i++) {
-            Entry entry = items.get(i);
+        for (Entry entry : list) {
 
-            if (mouseY >= currentY && mouseY < currentY + entry.height()) {
+            int h = entry.height();
 
-                boolean changed = (selectedIndex != i);
-                selectedIndex = i;
+            if (currentY + h <= getY()) {
+                currentY += h;
+                continue;
+            }
 
-                if (onSelect != null) onSelect.accept(i);
+            if (currentY >= getY() + height) {
+                break;
+            }
 
-                if (onSelectEntry != null) {
-                    onSelectEntry.accept(i, new EntryContext(this, i, entry));
-                }
+            if (mouseX >= getX() + 1 && mouseX < getX() + width - 7 &&
+                    mouseY >= currentY && mouseY < currentY + h) {
 
-                if (changed) {
-                    playDownSound(Minecraft.getInstance().getSoundManager());
+                selectedId = entry.id();
+                playDownSound(Minecraft.getInstance().getSoundManager());
+
+                EntryContext ctx = new EntryContext(this, entry.id(), entry);
+
+                if (onSelect != null) onSelect.accept(entry.id());
+                if (onSelectEntry != null) onSelectEntry.accept(ctx);
+
+                if (entry.onClick() != null) {
+                    entry.onClick().accept(ctx);
                 }
 
                 return true;
             }
 
-            currentY += entry.height();
+            currentY += h;
         }
 
         return false;
     }
 
-    private void updateScrolling(double mouseY) {
-        int totalContentHeight = 0;
-        for (Entry entry : items) {
-            totalContentHeight += entry.height();
-        }
-
-        if (totalContentHeight <= height) return;
-
-        float scrollPercent = (float) (mouseY - getY()) / (float) height;
-
-        scrollAmount = clamp(
-                scrollPercent * totalContentHeight - (height * 0.5f),
-                0,
-                Math.max(0, totalContentHeight - height)
-        );
-    }
+    // =========================
+    // SCROLL
+    // =========================
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        int total = 0;
-        for (Entry e : items) total += e.height();
 
-        if (total <= height) return false;
-
-        scrollAmount = clamp(
-                scrollAmount - (float) scrollY * 10,
-                0,
-                total - height
-        );
-
+        scrollVelocity += (float) -scrollY * 6f;
         return true;
     }
 
+    // =========================
+    // NARRATION (REQUIRED)
+    // =========================
+
+    private boolean needsScrollbar() {
+        int total = 0;
+        for (Entry e : items.values()) total += e.height();
+        return total > height;
+    }
+
+    private int contentWidth() {
+        return needsScrollbar() ? width - 7 : width;
+    }
+
+    private int calculateTextWidth(Entry entry) {
+        int rowWidth = contentWidth() - 2;
+        int itemWidth = 0;
+
+        if (entry.items() != null && !entry.items().isEmpty()) {
+            int itemSize = (int) (16 * entry.itemScale());
+            itemWidth = entry.items().size() * (itemSize + 2) + 2;
+        }
+
+        return Math.max(20, rowWidth - 10 - itemWidth);
+    }
+
+    private int calculateEntryHeight(Entry entry) {
+        int itemHeight = entry.items() != null && !entry.items().isEmpty()
+                ? (int) (16 * entry.itemScale()) + 4
+                : 4;
+
+        if (!entry.showText()) {
+            return itemHeight;
+        }
+
+        Font font = Minecraft.getInstance().font;
+        int textHeight = Math.max(10, font.split(entry.text(), calculateTextWidth(entry)).size() * 10);
+
+        return Math.max(itemHeight, textHeight + 4);
+    }
+
+    private int brightenColor(int color, float amount) {
+        int alpha = (color >>> 24) & 0xFF;
+        int red = (color >>> 16) & 0xFF;
+        int green = (color >>> 8) & 0xFF;
+        int blue = color & 0xFF;
+
+        red = clamp((int) (red + (255 - red) * amount), 0, 255);
+        green = clamp((int) (green + (255 - green) * amount), 0, 255);
+        blue = clamp((int) (blue + (255 - blue) * amount), 0, 255);
+
+        return (alpha << 24) | (red << 16) | (green << 8) | blue;
+    }
+
     @Override
-    protected void updateWidgetNarration(@NotNull NarrationElementOutput narration) {
+    protected void updateWidgetNarration(NarrationElementOutput narration) {
         defaultButtonNarrationText(narration);
     }
 
@@ -384,94 +586,36 @@ public class SimpleScrollList extends AbstractWidget {
         private final Object id;
 
         private Component text = Component.empty();
-        private List<ItemStack> items;
-        private List<ResourceLocation> textures;
-
-        private float scale = 1.0f;
+        private List<ItemStack> items = List.of();
+        private float scale = 1f;
         private boolean showText = true;
-
-        private ResourceLocation background;
-        private int backgroundColor = 0;
-
-        private List<Component> tooltip;
+        private int bgColor = 0;
+        private Consumer<EntryContext> onClick;
 
         public EntryBuilder(SimpleScrollList parent, Object id) {
             this.parent = parent;
             this.id = id;
         }
 
-        public EntryBuilder text(Component text) {
-            this.text = text;
-            return this;
-        }
+        public EntryBuilder text(Component t) { this.text = t; return this; }
+        public EntryBuilder items(List<ItemStack> i) { this.items = i; return this; }
+        public EntryBuilder itemScale(float s) { this.scale = s; return this; }
+        public EntryBuilder backgroundColor(int c) { this.bgColor = c; return this; }
 
-        public EntryBuilder items(List<ItemStack> items) {
-            this.items = items;
-            return this;
-        }
-
-        public EntryBuilder item(ItemStack stack) {
-            this.items = List.of(stack);
-            return this;
-        }
-
-        public EntryBuilder textures(List<ResourceLocation> textures) {
-            this.textures = textures;
-            return this;
-        }
-
-        public EntryBuilder texture(ResourceLocation texture) {
-            this.textures = List.of(texture);
-            return this;
-        }
-
-        public EntryBuilder scale(float scale) {
-            this.scale = scale;
-            return this;
-        }
-
-        public EntryBuilder showText(boolean showText) {
-            this.showText = showText;
-            return this;
-        }
-
-        public EntryBuilder background(ResourceLocation bg) {
-            this.background = bg;
-            return this;
-        }
-
-        public EntryBuilder backgroundColor(int color) {
-            this.backgroundColor = color;
-            return this;
-        }
-
-        public EntryBuilder tooltip(List<Component> tooltip) {
-            this.tooltip = tooltip;
+        public EntryBuilder onClick(Consumer<EntryContext> c) {
+            this.onClick = c;
             return this;
         }
 
         public void add() {
-            int itemSize = (int) (16 * scale);
-            int textWidth = parent.width - 12;
+            Entry entry = new Entry(
+                    id, text, items, List.of(),
+                    scale, showText, 0,
+                    null, bgColor, List.of(),
+                    onClick
+            );
 
-            List<FormattedCharSequence> split =
-                    Minecraft.getInstance().font.split(text, textWidth);
-
-            int textHeight = showText ? split.size() * 10 : 0;
-            int rowHeight = itemSize + textHeight + 6;
-
-            parent.addEntry(new Entry(
-                    id,
-                    text,
-                    items,
-                    textures,
-                    scale,
-                    showText,
-                    rowHeight,
-                    background,
-                    backgroundColor,
-                    tooltip
-            ));
+            parent.addEntry(entry.withHeight(parent.calculateEntryHeight(entry)));
         }
     }
 }

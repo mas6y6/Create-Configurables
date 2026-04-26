@@ -2,13 +2,11 @@ package com.mas6y6.configureablecrushingwheel.server;
 
 
 import com.mas6y6.configureablecrushingwheel.common.RecipeConflicts;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetConflictingRecipesPacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetConflictingRecipesResponsePacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetCrushingWheelConfigPacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetCrushingWheelConfigResponsePacket;
+import com.mas6y6.configureablecrushingwheel.common.packets.*;
 import com.mas6y6.configureablecrushingwheel.server.world.ConfiguredCrushingWheelsWorldData;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.crusher.CrushingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,6 +18,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.*;
+
 
 public class PacketHandle {
     public static void GetConflictingRecipesPacket(GetConflictingRecipesPacket packet, IPayloadContext ctx) {
@@ -44,6 +43,16 @@ public class PacketHandle {
                         .computeIfAbsent(stack.getItem(), i -> new HashSet<>())
                         .add(holder.id());
             }
+
+            conflicts.inputs.put(holder.id(), crushing.getIngredients().getFirst().getItems()[0]);
+
+            List<ItemStack> outputs = new ArrayList<>();
+
+            for (ProcessingOutput output : crushing.getRollableResults()) {
+                outputs.add(output.getStack());
+            }
+
+            conflicts.outputs.put(holder.id(), outputs);
         }
 
         itemToRecipes.forEach((item, recipes) -> {
@@ -66,5 +75,19 @@ public class PacketHandle {
                 (ServerPlayer) iPayloadContext.player(),
                 new GetCrushingWheelConfigResponsePacket(packet.uuid(),data.get(packet.uuid()))
         );
+    }
+
+    public static void SetConfigurationPacket(SetConfigurationPacket packet, IPayloadContext iPayloadContext) {
+        if (iPayloadContext.player().level().isClientSide()) return;
+
+        ServerLevel level = (ServerLevel) iPayloadContext.player().level();
+        ConfiguredCrushingWheelsWorldData data = ConfiguredCrushingWheelsWorldData.get(level);
+
+        if (packet.config().config.isEmpty()) {
+            data.remove(packet.config().uuid);
+            return;
+        }
+
+        data.put(packet.config().uuid, packet.config());
     }
 }

@@ -33,4 +33,10 @@ public class PacketHandler {
             com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetCrushingWheelConfigPacket(packet, iPayloadContext);
         });
     }
+
+    public static void SetConfigurationPacket(SetConfigurationPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.SetConfigurationPacket(packet, iPayloadContext);
+        });
+    }
 }

@@ -3,9 +3,11 @@ package com.mas6y6.configureablecrushingwheel.client.gui;
 import com.mas6y6.configureablecrushingwheel.Configureablecrushingwheel;
 import com.mas6y6.configureablecrushingwheel.client.gui.Components.SimpleScrollList;
 import com.mas6y6.configureablecrushingwheel.client.gui.Components.TextureButton;
+import com.mas6y6.configureablecrushingwheel.common.CrushingWheelsConfig;
 import com.mas6y6.configureablecrushingwheel.common.RecipeConflicts;
 import com.mas6y6.configureablecrushingwheel.common.packets.GetConflictingRecipesPacket;
 import com.mas6y6.configureablecrushingwheel.common.packets.GetCrushingWheelConfigPacket;
+import com.mas6y6.configureablecrushingwheel.common.packets.SetConfigurationPacket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
@@ -17,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.UUID;
 
 public class ConfigureCrushingWheelScreenMain extends Screen {
@@ -28,7 +31,9 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
     public boolean noConflict = true;
     private int imageWidth, imageHeight;
     private TextureButton closeButton;
+    private TextureButton resetButton;
     public RecipeConflicts recipeConflicts;
+    public CrushingWheelsConfig config;
 
     public ConfigureCrushingWheelScreenMain(String controller_uuid) {
         super(TITLE);
@@ -52,8 +57,8 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
         this.scrollList = new SimpleScrollList(this.leftPos + 7, this.topPos + 50, 178, 73);
         scrollList.setListBorder(0xFF585858);
         scrollList.setListBackground(0xFF3E3E3E);
-        scrollList.setOnSelectEntry((index, ctx) -> {
-            Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenRecipe(controller_uuid.toString(),ctx.entry().items().getFirst(), recipeConflicts));
+        scrollList.setOnSelectEntry((ctx) -> {
+            Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenRecipe(controller_uuid.toString(),ctx.entry().items().getFirst(), recipeConflicts, config));
         });
 
         this.closeButton = new TextureButton(this.leftPos + 166, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
@@ -63,11 +68,37 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
         this.closeButton.setUVHover(18,0);
         this.closeButton.setPressed(36,0);
 
+        this.resetButton = new TextureButton(this.leftPos + 136, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
+            PacketDistributor.sendToServer(new SetConfigurationPacket(new CrushingWheelsConfig(Map.of(), controller_uuid)));
+            Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenMain(controller_uuid.toString()));
+        });
+        this.resetButton.setUV(0,36);
+        this.resetButton.setUVHover(18,36);
+        this.resetButton.setPressed(36,36);
+
         PacketDistributor.sendToServer(new GetConflictingRecipesPacket());
         PacketDistributor.sendToServer(new GetCrushingWheelConfigPacket(controller_uuid));
 
         this.addRenderableWidget(scrollList);
         this.addRenderableWidget(closeButton);
+        this.addRenderableWidget(resetButton);
+    }
+
+    public void applyResolvedConflictHighlights() {
+        if (this.scrollList == null) {
+            return;
+        }
+
+        this.scrollList.getAllEntries((id, entry) -> this.scrollList.updateEntry(id, entry.withBackgroundColor(0)));
+
+        if (this.config == null) {
+            return;
+        }
+
+        this.config.config.forEach((itemId, recipeId) -> {
+            Object item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemId).asItem();
+            this.scrollList.getEntry(item, entry -> this.scrollList.updateEntry(item, entry.withBackgroundColor(0xFF748c5D)));
+        });
     }
 
 
