@@ -13,6 +13,7 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,6 +35,7 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
     private TextureButton resetButton;
     public RecipeConflicts recipeConflicts;
     public CrushingWheelsConfig config;
+    private EditBox searchBox;
 
     public ConfigureCrushingWheelScreenMain(String controller_uuid) {
         super(TITLE);
@@ -54,9 +56,10 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
 
         super.init();
 
-        this.scrollList = new SimpleScrollList(this.leftPos + 7, this.topPos + 50, 178, 73);
+        this.scrollList = new SimpleScrollList(this.leftPos + 7, this.topPos + 60, 178, 73);
         scrollList.setListBorder(0xFF585858);
         scrollList.setListBackground(0xFF3E3E3E);
+        scrollList.setSearchQuerySupplier(() -> searchBox != null ? searchBox.getValue() : "");
         scrollList.setOnSelectEntry((ctx) -> {
             Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenRecipe(controller_uuid.toString(),ctx.entry().items().getFirst(), recipeConflicts, config));
         });
@@ -79,6 +82,16 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
         PacketDistributor.sendToServer(new GetConflictingRecipesPacket());
         PacketDistributor.sendToServer(new GetCrushingWheelConfigPacket(controller_uuid));
 
+
+        searchBox = new EditBox(this.font,this.leftPos + 7,this.topPos + 20, 178, 16, Component.translatable("gui.configureablecrushingwheel.search_box"));
+        searchBox.setMaxLength(50);
+        searchBox.setResponder(s -> {
+            if (this.scrollList != null) {
+                this.scrollList.setSearchQuerySupplier(this.searchBox::getValue);
+            }
+        });
+
+        this.addRenderableWidget(searchBox);
         this.addRenderableWidget(scrollList);
         this.addRenderableWidget(closeButton);
         this.addRenderableWidget(resetButton);
@@ -120,7 +133,7 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
                 font,
                 Component.translatable("gui.configureablecrushingwheel.conflicting_text").withColor(0x9e9e9e),
                 this.leftPos + 10,
-                this.topPos + 40,
+                this.topPos + 50,
                 0xFFFFFF,
                 false
         );

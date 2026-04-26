@@ -16,9 +16,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static net.minecraft.util.Mth.clamp;
 
@@ -86,6 +88,7 @@ public class SimpleScrollList extends AbstractWidget {
 
     private Consumer<Object> onSelect;
     private Consumer<EntryContext> onSelectEntry;
+    private Supplier<String> searchQuerySupplier;
 
     // =========================
     // STYLE
@@ -110,7 +113,19 @@ public class SimpleScrollList extends AbstractWidget {
     // =========================
 
     private List<Entry> orderedEntries() {
-        return new ArrayList<>(items.values());
+        String query = getSearchQuery();
+        if (query.isEmpty()) {
+            return new ArrayList<>(items.values());
+        }
+
+        List<Entry> filteredEntries = new ArrayList<>();
+        for (Entry entry : items.values()) {
+            if (entry.text().getString().toLowerCase(Locale.ROOT).contains(query)) {
+                filteredEntries.add(entry);
+            }
+        }
+
+        return filteredEntries;
     }
 
     public EntryBuilder entry(Object id) {
@@ -159,6 +174,11 @@ public class SimpleScrollList extends AbstractWidget {
 
     public void setOnSelectEntry(Consumer<EntryContext> onSelectEntry) {
         this.onSelectEntry = onSelectEntry;
+    }
+
+    public void setSearchQuerySupplier(@Nullable Supplier<String> searchQuerySupplier) {
+        this.searchQuerySupplier = searchQuerySupplier;
+        scrollAmount = 0;
     }
 
     public Object getSelectedId() {
@@ -523,8 +543,21 @@ public class SimpleScrollList extends AbstractWidget {
 
     private boolean needsScrollbar() {
         int total = 0;
-        for (Entry e : items.values()) total += e.height();
+        for (Entry e : orderedEntries()) total += e.height();
         return total > height;
+    }
+
+    private String getSearchQuery() {
+        if (searchQuerySupplier == null) {
+            return "";
+        }
+
+        String query = searchQuerySupplier.get();
+        if (query == null) {
+            return "";
+        }
+
+        return query.trim().toLowerCase(Locale.ROOT);
     }
 
     private int contentWidth() {
