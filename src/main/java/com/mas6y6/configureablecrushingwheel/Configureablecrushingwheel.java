@@ -44,10 +44,10 @@ public class Configureablecrushingwheel {
         payloadRegistrar.playToServer(GetCrushingWheelConfigPacket.TYPE,GetCrushingWheelConfigPacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigPacket);
         payloadRegistrar.playToClient(GetCrushingWheelConfigResponsePacket.TYPE,GetCrushingWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigResponsePacket);
 
-        payloadRegistrar.playToServer(GetMillstoneWheelConfigPacket.TYPE, GetMillstoneWheelConfigPacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigPacket);
+        payloadRegistrar.playToServer(GetMillstoneConfigPacket.TYPE, GetMillstoneConfigPacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigPacket);
         payloadRegistrar.playToClient(GetMillstoneWheelConfigResponsePacket.TYPE, GetMillstoneWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigResponsePacket);
 
         payloadRegistrar.playToServer(SetConfigurationPacket.TYPE,SetConfigurationPacket.STREAM_CODEC, PacketHandler::SetConfigurationPacket);
-        payloadRegistrar.playToClient(SetMillstoneConfigurationPacket.TYPE,SetMillstoneConfigurationPacket.STREAM_CODEC, PacketHandler::SetMillstoneConfigurationPacket);
+        payloadRegistrar.playToServer(SetMillstoneConfigurationPacket.TYPE,SetMillstoneConfigurationPacket.STREAM_CODEC, PacketHandler::SetMillstoneConfigurationPacket);
     }
 }

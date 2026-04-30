@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 public record GetMillstoneWheelConfigResponsePacket(UUID uuid, MillstoneConfig config) implements CustomPacketPayload {
-    public static final Type<GetMillstoneWheelConfigResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_crushing_wheel_config_response"));
+    public static final Type<GetMillstoneWheelConfigResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_millstone_config_response"));
 
     public static final StreamCodec<FriendlyByteBuf, GetMillstoneWheelConfigResponsePacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet ) -> {

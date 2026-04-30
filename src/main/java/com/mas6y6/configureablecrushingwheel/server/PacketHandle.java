@@ -150,7 +150,7 @@ public class PacketHandle {
                 new GetConflictingRecipesResponsePacket(conflicts));
     }
 
-    public static void GetMillingWheelConfigPacket(GetMillstoneWheelConfigPacket packet, IPayloadContext iPayloadContext) {
+    public static void GetMillingWheelConfigPacket(GetMillstoneConfigPacket packet, IPayloadContext iPayloadContext) {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();

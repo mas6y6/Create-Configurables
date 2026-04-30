@@ -58,7 +58,7 @@ public class PacketHandler {
         });
     }
 
-    public static void GetMillingWheelConfigPacket(GetMillstoneWheelConfigPacket packet, IPayloadContext iPayloadContext) {
+    public static void GetMillingWheelConfigPacket(GetMillstoneConfigPacket packet, IPayloadContext iPayloadContext) {
         iPayloadContext.enqueueWork(() -> {
             com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetMillingWheelConfigPacket(packet, iPayloadContext);
         });

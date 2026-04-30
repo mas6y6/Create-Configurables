@@ -9,15 +9,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public record GetMillstoneWheelConfigPacket(UUID uuid) implements CustomPacketPayload {
-    public static final Type<GetMillstoneWheelConfigPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_milling_wheel_config"));
+public record GetMillstoneConfigPacket(UUID uuid) implements CustomPacketPayload {
+    public static final Type<GetMillstoneConfigPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_milling_wheel_config"));
 
-    public static final StreamCodec<FriendlyByteBuf, GetMillstoneWheelConfigPacket> STREAM_CODEC = StreamCodec.of(
+    public static final StreamCodec<FriendlyByteBuf, GetMillstoneConfigPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet ) -> {
                 buf.writeUUID(packet.uuid);
             },
             (buf) -> {
-                return new GetMillstoneWheelConfigPacket(buf.readUUID());
+                return new GetMillstoneConfigPacket(buf.readUUID());
             }
     );
     @Override

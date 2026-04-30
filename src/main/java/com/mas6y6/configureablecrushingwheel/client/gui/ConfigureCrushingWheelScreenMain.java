@@ -137,7 +137,7 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
                     font,
                     Component.translatable("gui.configureablecrushingwheel.no_conflict"),
                     this.leftPos + 9,
-                    this.topPos + 53,
+                    this.topPos + 63,
                     0xFFFFFF,
                     false
             );
