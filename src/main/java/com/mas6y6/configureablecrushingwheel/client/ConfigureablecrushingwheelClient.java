@@ -2,6 +2,7 @@ package com.mas6y6.configureablecrushingwheel.client;
 
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelControllerBlockEntity;
+import com.simibubi.create.content.kinetics.millstone.MillstoneBlockEntity;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -60,6 +61,13 @@ public class ConfigureablecrushingwheelClient {
         if (hit.getType() == HitResult.Type.BLOCK) {
             BlockPos pos = hit.getBlockPos();
             if (level.getBlockEntity(pos) instanceof CrushingWheelControllerBlockEntity entity) {
+                Outliner.getInstance().showAABB(entity, AABB.encapsulatingFullBlocks(pos,pos))
+                        .disableLineNormals()
+                        .colored(0x5999ff)
+                        .lineWidth(1 / 55f);
+            }
+
+            if (level.getBlockEntity(pos) instanceof MillstoneBlockEntity entity) {
                 Outliner.getInstance().showAABB(entity, AABB.encapsulatingFullBlocks(pos,pos))
                         .disableLineNormals()
                         .colored(0x5999ff)

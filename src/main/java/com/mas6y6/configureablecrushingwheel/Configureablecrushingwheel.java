@@ -38,6 +38,8 @@ public class Configureablecrushingwheel {
         payloadRegistrar.playToClient(GetConflictingRecipesResponsePacket.TYPE,GetConflictingRecipesResponsePacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesResponsePacket);
         payloadRegistrar.playToClient(GetCrushingWheelConfigResponsePacket.TYPE,GetCrushingWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigResponsePacket);
         payloadRegistrar.playToServer(GetCrushingWheelConfigPacket.TYPE,GetCrushingWheelConfigPacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigPacket);
+
         payloadRegistrar.playToServer(SetConfigurationPacket.TYPE,SetConfigurationPacket.STREAM_CODEC, PacketHandler::SetConfigurationPacket);
+        payloadRegistrar.playToClient(SetMillstoneConfigurationPacket.TYPE,SetMillstoneConfigurationPacket.STREAM_CODEC, PacketHandler::SetMillstoneConfigurationPacket);
     }
 }

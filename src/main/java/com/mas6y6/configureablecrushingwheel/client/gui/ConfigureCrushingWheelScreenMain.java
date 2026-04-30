@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -66,18 +67,12 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
 
         this.closeButton = new TextureButton(this.leftPos + 166, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
             Minecraft.getInstance().setScreen(null);
-        });
-        this.closeButton.setUV(0,0);
-        this.closeButton.setUVHover(18,0);
-        this.closeButton.setPressed(36,0);
+        }).setUV(0,0).setUVHover(18,0).setPressed(36,0);
 
         this.resetButton = new TextureButton(this.leftPos + 136, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
             PacketDistributor.sendToServer(new SetConfigurationPacket(new CrushingWheelsConfig(Map.of(), controller_uuid)));
             Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenMain(controller_uuid.toString()));
-        });
-        this.resetButton.setUV(0,36);
-        this.resetButton.setUVHover(18,36);
-        this.resetButton.setPressed(36,36);
+        }).setUV(0,36).setUVHover(18,36).setPressed(36,36).setTooltip(Component.translatable("gui.configureablecrushingwheel.reset_config"));
 
         PacketDistributor.sendToServer(new GetConflictingRecipesPacket());
         PacketDistributor.sendToServer(new GetCrushingWheelConfigPacket(controller_uuid));
@@ -155,6 +150,8 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
         poseStack.scale(2.5f, 2.5f, 1f);
         graphics.renderItem(AllBlocks.CRUSHING_WHEEL.asStack(), 0, 0);
         poseStack.popPose();
+
+        graphics.renderComponentTooltip(font, List.of(), mouseX, mouseY);
     }
 
     @Override

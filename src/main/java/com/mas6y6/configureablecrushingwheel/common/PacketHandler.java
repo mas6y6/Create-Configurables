@@ -39,4 +39,10 @@ public class PacketHandler {
             com.mas6y6.configureablecrushingwheel.server.PacketHandle.SetConfigurationPacket(packet, iPayloadContext);
         });
     }
+
+    public static void SetMillstoneConfigurationPacket(SetMillstoneConfigurationPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.SetMillstoneConfigurationPacket(packet, iPayloadContext);
+        });
+    }
 }

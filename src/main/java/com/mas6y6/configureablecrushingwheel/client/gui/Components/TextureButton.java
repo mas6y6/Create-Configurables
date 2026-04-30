@@ -3,10 +3,14 @@ package com.mas6y6.configureablecrushingwheel.client.gui.Components;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Optional;
 
 public class TextureButton extends AbstractWidget {
     private final ResourceLocation texture;
@@ -25,10 +29,17 @@ public class TextureButton extends AbstractWidget {
 
     private boolean pressed = false;
 
+    private Component tooltip;
+
     private final OnPress onPress;
 
     public interface OnPress {
         void onPress(TextureButton button);
+    }
+
+    public TextureButton setTooltip(Component tooltip) {
+        this.tooltip = tooltip;
+        return this;
     }
 
     public TextureButton(int x, int y, int w, int h,
@@ -78,24 +89,28 @@ public class TextureButton extends AbstractWidget {
                 onPress);
     }
 
-    public void setUV(int u, int v) {
+    public TextureButton setUV(int u, int v) {
         this.u = u;
         this.v = v;
+        return this;
     }
 
-    public void setUVHover(int u, int v) {
+    public TextureButton setUVHover(int u, int v) {
         this.hoverU = u;
         this.hoverV = v;
+        return this;
     }
 
-    public void setUVDisabled(int u, int v) {
+    public TextureButton setUVDisabled(int u, int v) {
         this.disabledU = u;
         this.disabledV = v;
+        return this;
     }
 
-    public void setPressed(int u, int v) {
+    public TextureButton setPressed(int u, int v) {
         this.pressedU = u;
         this.pressedV = v;
+        return this;
     }
 
     public void enable() {
@@ -114,6 +129,11 @@ public class TextureButton extends AbstractWidget {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Tooltip getTooltip() {
+        return Tooltip.create(this.tooltip);
     }
 
     @Override
@@ -152,6 +172,15 @@ public class TextureButton extends AbstractWidget {
                 currentU, currentV,
                 this.width, this.height,
                 256, 256);
+
+        if (this.isHovered() && this.tooltip != null) {
+            gg.renderComponentTooltip(
+                    Minecraft.getInstance().font,
+                    List.of(this.tooltip),
+                    mouseX,
+                    mouseY
+            );
+        }
     }
 
     @Override

@@ -2,10 +2,9 @@ package com.mas6y6.configureablecrushingwheel.mixin;
 
 import com.mas6y6.configureablecrushingwheel.common.IConfiguredCrushingWheelUUID;
 import com.mas6y6.configureablecrushingwheel.server.ConfigureablecrushingwheelServer;
-import com.mas6y6.configureablecrushingwheel.server.world.ConfiguredCrushingWheelsWorldData;
+import com.mas6y6.configureablecrushingwheel.server.world.WorldData;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.crusher.AbstractCrushingRecipe;
-import com.simibubi.create.content.kinetics.crusher.CrushingRecipe;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelControllerBlockEntity;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,8 +27,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings({"all"}) // The mixin should work fine so i am gonna suppress the warnings
 @Mixin(CrushingWheelControllerBlockEntity.class)
 public class CrushingWheelControllerBlockEntityMixin implements IConfiguredCrushingWheelUUID {
+    @Unique
+    private static final String CONFIGUREABLE_CRUSHING_WHEEL_ID = "configureable_crushing_wheel_id";
+
     @Unique
     private UUID customUUID;
 
@@ -41,10 +44,14 @@ public class CrushingWheelControllerBlockEntityMixin implements IConfiguredCrush
                            HolderLookup.Provider registries,
                            boolean clientPacket,
                            CallbackInfo ci) {
+        writeCustomUuid(compound);
+    }
 
-        if (customUUID != null) {
-            compound.putUUID("configureable_crushing_wheel_id", customUUID);
-        }
+    @Inject(method = "saveAdditional", at = @At("TAIL"), require = 0)
+    private void saveAdditionalUUID(CompoundTag compound,
+                                    HolderLookup.Provider registries,
+                                    CallbackInfo ci) {
+        writeCustomUuid(compound);
     }
 
     @Inject(method = "read", at = @At("TAIL"))
@@ -52,28 +59,50 @@ public class CrushingWheelControllerBlockEntityMixin implements IConfiguredCrush
                           HolderLookup.Provider registries,
                           boolean clientPacket,
                           CallbackInfo ci) {
+        readCustomUuid(compound);
+    }
 
-        if (compound.hasUUID("configureable_crushing_wheel_id")) {
-            this.customUUID = compound.getUUID("configureable_crushing_wheel_id");
-        } else {
-            this.customUUID = UUID.randomUUID();
-
-            if ((Object) this instanceof BlockEntity be) {
-                be.setChanged();
-            }
-        }
+    @Inject(method = "loadAdditional", at = @At("TAIL"), require = 0)
+    private void loadAdditionalUUID(CompoundTag compound,
+                                    HolderLookup.Provider registries,
+                                    CallbackInfo ci) {
+        readCustomUuid(compound);
     }
 
     @Override
     public UUID getUUID() {
         if (customUUID == null) {
-            customUUID = UUID.randomUUID();
-
-            if ((Object) this instanceof BlockEntity be) {
-                be.setChanged();
-            }
+            assignNewUuid();
         }
         return customUUID;
+    }
+
+    @Unique
+    private void writeCustomUuid(CompoundTag compound) {
+        if (customUUID != null) {
+            compound.putUUID(CONFIGUREABLE_CRUSHING_WHEEL_ID, customUUID);
+        }
+    }
+
+    @Unique
+    private void readCustomUuid(CompoundTag compound) {
+        if (compound.hasUUID(CONFIGUREABLE_CRUSHING_WHEEL_ID)) {
+            this.customUUID = compound.getUUID(CONFIGUREABLE_CRUSHING_WHEEL_ID);
+            return;
+        }
+
+        if (this.customUUID == null) {
+            assignNewUuid();
+        }
+    }
+
+    @Unique
+    private void assignNewUuid() {
+        customUUID = UUID.randomUUID();
+
+        if ((Object) this instanceof BlockEntity be) {
+            be.setChanged();
+        }
     }
 
     @Inject(
@@ -91,9 +120,9 @@ public class CrushingWheelControllerBlockEntityMixin implements IConfiguredCrush
                 return;
             }
 
-            ConfiguredCrushingWheelsWorldData data = ConfiguredCrushingWheelsWorldData.get((ServerLevel) level);
+            WorldData data = WorldData.get((ServerLevel) level);
             ResourceLocation itemID = BuiltInRegistries.ITEM.getKey(wrapper.getItem(0).getItem());
-            ResourceLocation requestedRecipeId = data.get(getUUID()).config.get(itemID);
+            ResourceLocation requestedRecipeId = data.getCrushingWheel(getUUID()).config.get(itemID);
 
             if (requestedRecipeId == null) {
                 return;
@@ -115,10 +144,7 @@ public class CrushingWheelControllerBlockEntityMixin implements IConfiguredCrush
             }
 
             if (preferredRecipe != null) {
-                ConfigureablecrushingwheelServer.LOGGER.debug("Using preferred crushing recipe {}", preferredRecipe.id());
                 cir.setReturnValue(Optional.of(preferredRecipe));
-            } else {
-                ConfigureablecrushingwheelServer.LOGGER.debug("Preferred crushing recipe {} was not found for item {}", requestedRecipeId, itemID);
             }
         } catch (Exception e) {
             e.printStackTrace();

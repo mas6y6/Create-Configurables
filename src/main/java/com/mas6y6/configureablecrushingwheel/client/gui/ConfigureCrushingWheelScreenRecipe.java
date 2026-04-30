@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ConfigureCrushingWheelScreenRecipe extends Screen {
@@ -70,24 +71,11 @@ public class ConfigureCrushingWheelScreenRecipe extends Screen {
 
         this.closeButton = new TextureButton(this.leftPos + 166, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
             Minecraft.getInstance().setScreen(null);
-        });
-        this.closeButton.setUV(0,0);
-        this.closeButton.setUVHover(18,0);
-        this.closeButton.setPressed(36,0);
+        }).setUV(0,0).setUVHover(18,0).setPressed(36,0);
 
         this.backbutton = new TextureButton(this.leftPos + 8, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
             Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenMain(controller_uuid.toString()));
-        });
-        this.backbutton.setUV(0,18);
-        this.backbutton.setUVHover(18,18);
-        this.backbutton.setPressed(36,18);
-
-        this.recipeConflicts.recipes.get(itemStack.getItem()).forEach(recipe -> {
-           this.scrollList.entry(recipe)
-                   .items(this.recipeConflicts.outputs.get(recipe))
-                   .text(Component.literal(recipe.toString()))
-                   .add();
-        });
+        }).setUV(0,18).setUVHover(18,18).setPressed(36,18).setTooltip(Component.translatable("gui.configureablecrushingwheel.back"));
 
         this.resetButton = new TextureButton(this.leftPos + 136, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
             clearRecipeSelections();
@@ -96,11 +84,14 @@ public class ConfigureCrushingWheelScreenRecipe extends Screen {
                 config.removeConfig(BuiltInRegistries.ITEM.getKey(this.itemStack.getItem()));
                 PacketDistributor.sendToServer(new SetConfigurationPacket(config));
             }
-        });
-        this.resetButton.setUV(0,36);
-        this.resetButton.setUVHover(18,36);
-        this.resetButton.setPressed(36,36);
+        }).setUV(0,36).setUVHover(18,36).setPressed(36,36).setTooltip(Component.translatable("gui.configureablecrushingwheel.reset_recipe"));
 
+        this.recipeConflicts.recipes.get(itemStack.getItem()).forEach(recipe -> {
+            this.scrollList.entry(recipe)
+                    .items(this.recipeConflicts.outputs.get(recipe))
+                    .text(Component.literal(recipe.toString()))
+                    .add();
+        });
         applyConfiguredSelection();
 
         this.scrollList.setOnSelectEntry(ctx -> {
@@ -183,6 +174,8 @@ public class ConfigureCrushingWheelScreenRecipe extends Screen {
         poseStack.scale(2.5f, 2.5f, 1f);
         graphics.renderItem(AllBlocks.CRUSHING_WHEEL.asStack(), 0, 0);
         poseStack.popPose();
+
+        graphics.renderComponentTooltip(font, List.of(), mouseX, mouseY);
     }
 
     @Override

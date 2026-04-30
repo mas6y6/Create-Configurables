@@ -4,7 +4,8 @@
   "package": "com.mas6y6.configureablecrushingwheel.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "CrushingWheelControllerBlockEntityMixin"
+    "CrushingWheelControllerBlockEntityMixin",
+    "MillstoneBlockEntityMixin"
   ],
   "client": [
   ],

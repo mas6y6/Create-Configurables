@@ -3,7 +3,7 @@ package com.mas6y6.configureablecrushingwheel.server;
 
 import com.mas6y6.configureablecrushingwheel.common.RecipeConflicts;
 import com.mas6y6.configureablecrushingwheel.common.packets.*;
-import com.mas6y6.configureablecrushingwheel.server.world.ConfiguredCrushingWheelsWorldData;
+import com.mas6y6.configureablecrushingwheel.server.world.WorldData;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.crusher.CrushingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
@@ -69,11 +69,11 @@ public class PacketHandle {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();
-        ConfiguredCrushingWheelsWorldData data = ConfiguredCrushingWheelsWorldData.get(level);
+        WorldData data = WorldData.get(level);
 
         PacketDistributor.sendToPlayer(
                 (ServerPlayer) iPayloadContext.player(),
-                new GetCrushingWheelConfigResponsePacket(packet.uuid(),data.get(packet.uuid()))
+                new GetCrushingWheelConfigResponsePacket(packet.uuid(),data.getCrushingWheel(packet.uuid()))
         );
     }
 
@@ -81,13 +81,27 @@ public class PacketHandle {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();
-        ConfiguredCrushingWheelsWorldData data = ConfiguredCrushingWheelsWorldData.get(level);
+        WorldData data = WorldData.get(level);
 
         if (packet.config().config.isEmpty()) {
-            data.remove(packet.config().uuid);
+            data.removeCrushingWheel(packet.config().uuid);
             return;
         }
 
-        data.put(packet.config().uuid, packet.config());
+        data.putCrushingWheel(packet.config().uuid, packet.config());
+    }
+
+    public static void SetMillstoneConfigurationPacket(SetMillstoneConfigurationPacket packet, IPayloadContext iPayloadContext) {
+        if (iPayloadContext.player().level().isClientSide()) return;
+
+        ServerLevel level = (ServerLevel) iPayloadContext.player().level();
+        WorldData data = WorldData.get(level);
+
+        if (packet.config().config.isEmpty()) {
+            data.removeMillstone(packet.config().uuid);
+            return;
+        }
+
+        data.putMillstone(packet.config().uuid, packet.config());
     }
 }
