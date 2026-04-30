@@ -5,7 +5,6 @@ import com.mas6y6.configureablecrushingwheel.client.gui.Components.SimpleScrollL
 import com.mas6y6.configureablecrushingwheel.client.gui.Components.TextureButton;
 import com.mas6y6.configureablecrushingwheel.common.CrushingWheelsConfig;
 import com.mas6y6.configureablecrushingwheel.common.RecipeConflicts;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetConflictingRecipesPacket;
 import com.mas6y6.configureablecrushingwheel.common.packets.SetConfigurationPacket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;

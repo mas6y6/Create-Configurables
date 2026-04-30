@@ -6,6 +6,7 @@ import com.mas6y6.configureablecrushingwheel.common.packets.*;
 import com.mas6y6.configureablecrushingwheel.server.world.WorldData;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.crusher.CrushingRecipe;
+import com.simibubi.create.content.kinetics.millstone.MillingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,7 @@ import java.util.*;
 
 
 public class PacketHandle {
-    public static void GetConflictingRecipesPacket(GetConflictingRecipesPacket packet, IPayloadContext ctx) {
+    public static void GetConflictingRecipesPacket(GetCrushingConflictingRecipesPacket packet, IPayloadContext ctx) {
         if (ctx.player().level().isClientSide()) return;
 
         ServerPlayer player = (ServerPlayer) ctx.player();
@@ -103,5 +104,61 @@ public class PacketHandle {
         }
 
         data.putMillstone(packet.config().uuid, packet.config());
+    }
+
+    public static void GetMillingConflictingRecipesPacket(GetMillstoneConflictingRecipesPacket packet, IPayloadContext ctx) {
+        if (ctx.player().level().isClientSide()) return;
+
+        ServerPlayer player = (ServerPlayer) ctx.player();
+        ServerLevel level = player.serverLevel();
+        RecipeManager manager = level.getRecipeManager();
+
+        RecipeConflicts conflicts = new RecipeConflicts();
+
+        Map<Item, Set<ResourceLocation>> itemToRecipes = new HashMap<>();
+
+        for (var holder : manager.getAllRecipesFor(AllRecipeTypes.MILLING.getType())) {
+            if (!(holder.value() instanceof MillingRecipe milling)) continue;
+
+            if (milling.getIngredients().isEmpty()) continue;
+            Ingredient ingredient = milling.getIngredients().getFirst();
+
+            for (ItemStack stack : ingredient.getItems()) {
+                itemToRecipes
+                        .computeIfAbsent(stack.getItem(), i -> new HashSet<>())
+                        .add(holder.id());
+            }
+
+            conflicts.inputs.put(holder.id(), milling.getIngredients().getFirst().getItems()[0]);
+
+            List<ItemStack> outputs = new ArrayList<>();
+
+            for (ProcessingOutput output : milling.getRollableResults()) {
+                outputs.add(output.getStack());
+            }
+
+            conflicts.outputs.put(holder.id(), outputs);
+        }
+
+        itemToRecipes.forEach((item, recipes) -> {
+            if (recipes.size() > 1) {
+                conflicts.addConflict(item, new ArrayList<>(recipes));
+            }
+        });
+
+        PacketDistributor.sendToPlayer(player,
+                new GetConflictingRecipesResponsePacket(conflicts));
+    }
+
+    public static void GetMillingWheelConfigPacket(GetMillstoneWheelConfigPacket packet, IPayloadContext iPayloadContext) {
+        if (iPayloadContext.player().level().isClientSide()) return;
+
+        ServerLevel level = (ServerLevel) iPayloadContext.player().level();
+        WorldData data = WorldData.get(level);
+
+        PacketDistributor.sendToPlayer(
+                (ServerPlayer) iPayloadContext.player(),
+                new GetMillstoneWheelConfigResponsePacket(packet.uuid(),data.getMillstone(packet.uuid()))
+        );
     }
 }

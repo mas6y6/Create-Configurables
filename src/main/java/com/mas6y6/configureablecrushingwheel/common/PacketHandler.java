@@ -4,13 +4,13 @@ import com.mas6y6.configureablecrushingwheel.common.packets.*;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class PacketHandler {
-    public static void OpenRecipeGuiPacket(OpenRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+    public static void OpenRecipeGuiPacket(OpenCrushingWheelRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
         iPayloadContext.enqueueWork(() -> {
             com.mas6y6.configureablecrushingwheel.client.PacketHandle.OpenRecipeGui(packet, iPayloadContext);
         });
     }
 
-    public static void GetConflictingRecipesPacket(GetConflictingRecipesPacket packet, IPayloadContext iPayloadContext) {
+    public static void GetConflictingRecipesPacket(GetCrushingConflictingRecipesPacket packet, IPayloadContext iPayloadContext) {
         iPayloadContext.enqueueWork(() -> {
             com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetConflictingRecipesPacket(packet, iPayloadContext);
         });
@@ -43,6 +43,30 @@ public class PacketHandler {
     public static void SetMillstoneConfigurationPacket(SetMillstoneConfigurationPacket packet, IPayloadContext iPayloadContext) {
         iPayloadContext.enqueueWork(() -> {
             com.mas6y6.configureablecrushingwheel.server.PacketHandle.SetMillstoneConfigurationPacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void OpenMillstoneRecipeGuiPacket(OpenMillstoneRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.client.PacketHandle.OpenMillstoneRecipeGuiPacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetMillingConflictingRecipesPacket(GetMillstoneConflictingRecipesPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetMillingConflictingRecipesPacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetMillingWheelConfigPacket(GetMillstoneWheelConfigPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetMillingWheelConfigPacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetMillingWheelConfigResponsePacket(GetMillstoneWheelConfigResponsePacket getMillingWheelConfigResponsePacket, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.client.PacketHandle.GetMillingWheelConfigResponsePacket(getMillingWheelConfigResponsePacket, iPayloadContext);
         });
     }
 }

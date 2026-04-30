@@ -1,20 +1,17 @@
 package com.mas6y6.configureablecrushingwheel.client;
 
-import com.mas6y6.configureablecrushingwheel.client.gui.Components.SimpleScrollList;
 import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureCrushingWheelScreenMain;
 import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureCrushingWheelScreenRecipe;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetConflictingRecipesResponsePacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetCrushingWheelConfigResponsePacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.OpenRecipeGuiPacket;
+import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureMillstoneScreenMain;
+import com.mas6y6.configureablecrushingwheel.common.packets.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.MutableComponent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 
 public class PacketHandle {
-    public static void OpenRecipeGui(OpenRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+    public static void OpenRecipeGui(OpenCrushingWheelRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
         Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenMain(packet.uuid()));
     }
 
@@ -46,5 +43,13 @@ public class PacketHandle {
             screen.config = packet.config();
             screen.applyConfiguredSelection();
         }
+    }
+
+    public static void OpenMillstoneRecipeGuiPacket(OpenMillstoneRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+        Minecraft.getInstance().setScreen(new ConfigureMillstoneScreenMain(packet.uuid()));
+    }
+
+    public static void GetMillingWheelConfigResponsePacket(GetMillstoneWheelConfigResponsePacket getMillingWheelConfigResponsePacket, IPayloadContext iPayloadContext) {
+
     }
 }

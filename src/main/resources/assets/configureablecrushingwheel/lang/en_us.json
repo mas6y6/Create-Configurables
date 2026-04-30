@@ -13,5 +13,6 @@
   "gui.configureablecrushingwheel.search_box": "Search",
   "gui.configureablecrushingwheel.back": "Back to previous menu",
   "gui.configureablecrushingwheel.reset_recipe": "Reset this config",
-  "gui.configureablecrushingwheel.reset_config": "Reset all configuration"
+  "gui.configureablecrushingwheel.reset_config": "Reset all configuration",
+  "gui.configureablemillstone.title": "Configure Millstone"
 }
