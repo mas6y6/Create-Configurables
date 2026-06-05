@@ -7,10 +7,10 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public record GetMillstoneConflictingRecipesPacket() implements CustomPacketPayload {
-    public static final Type<GetMillstoneConflictingRecipesPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_milling_conflicting_recipes"));
+public record ServerBoundGetMillstoneConflictingRecipesPacket() implements CustomPacketPayload {
+    public static final Type<ServerBoundGetMillstoneConflictingRecipesPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_milling_conflicting_recipes"));
 
-    public static final StreamCodec<FriendlyByteBuf, GetMillstoneConflictingRecipesPacket> STREAM_CODEC = StreamCodec.unit(new GetMillstoneConflictingRecipesPacket());
+    public static final StreamCodec<FriendlyByteBuf, ServerBoundGetMillstoneConflictingRecipesPacket> STREAM_CODEC = StreamCodec.unit(new ServerBoundGetMillstoneConflictingRecipesPacket());
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {

@@ -5,9 +5,9 @@ import com.mas6y6.configureablecrushingwheel.client.gui.Components.SimpleScrollL
 import com.mas6y6.configureablecrushingwheel.client.gui.Components.TextureButton;
 import com.mas6y6.configureablecrushingwheel.common.CrushingWheelsConfig;
 import com.mas6y6.configureablecrushingwheel.common.RecipeConflicts;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetCrushingConflictingRecipesPacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.GetCrushingWheelConfigPacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.SetConfigurationPacket;
+import com.mas6y6.configureablecrushingwheel.common.packets.ServerBoundGetCrushingConflictingRecipesPacket;
+import com.mas6y6.configureablecrushingwheel.common.packets.ServerBoundGetCrushingWheelConfigPacket;
+import com.mas6y6.configureablecrushingwheel.common.packets.ServerBoundSetConfigurationPacket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;
 import net.minecraft.client.Minecraft;
@@ -69,12 +69,12 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
         }).setUV(0,0).setUVHover(18,0).setPressed(36,0);
 
         this.resetButton = new TextureButton(this.leftPos + 136, this.topPos + 151, 18, 18, ResourceLocation.parse("configureablecrushingwheel:textures/gui/buttons.png"), (button) -> {
-            PacketDistributor.sendToServer(new SetConfigurationPacket(new CrushingWheelsConfig(Map.of(), controller_uuid)));
+            PacketDistributor.sendToServer(new ServerBoundSetConfigurationPacket(new CrushingWheelsConfig(Map.of(), controller_uuid)));
             Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenMain(controller_uuid.toString()));
         }).setUV(0,36).setUVHover(18,36).setPressed(36,36).setTooltip(Component.translatable("gui.configureablecrushingwheel.reset_config"));
 
-        PacketDistributor.sendToServer(new GetCrushingConflictingRecipesPacket());
-        PacketDistributor.sendToServer(new GetCrushingWheelConfigPacket(controller_uuid));
+        PacketDistributor.sendToServer(new ServerBoundGetCrushingConflictingRecipesPacket());
+        PacketDistributor.sendToServer(new ServerBoundGetCrushingWheelConfigPacket(controller_uuid));
 
 
         searchBox = new EditBox(this.font,this.leftPos + 7,this.topPos + 20, 178, 16, Component.translatable("gui.configureablecrushingwheel.search_box"));
@@ -146,7 +146,7 @@ public class ConfigureCrushingWheelScreenMain extends Screen {
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();
         poseStack.translate(this.leftPos + 210, this.topPos + 140, 0);
-        poseStack.scale(2.5f, 2.5f, 1f);
+        poseStack.scale(2.5f, 2.5f, 2.5f);
         graphics.renderItem(AllBlocks.CRUSHING_WHEEL.asStack(), 0, 0);
         poseStack.popPose();
 

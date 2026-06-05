@@ -3,11 +3,9 @@ package com.mas6y6.configureablecrushingwheel.client.gui;
 import com.mas6y6.configureablecrushingwheel.Configureablecrushingwheel;
 import com.mas6y6.configureablecrushingwheel.client.gui.Components.SimpleScrollList;
 import com.mas6y6.configureablecrushingwheel.client.gui.Components.TextureButton;
-import com.mas6y6.configureablecrushingwheel.common.CrushingWheelsConfig;
 import com.mas6y6.configureablecrushingwheel.common.MillstoneConfig;
 import com.mas6y6.configureablecrushingwheel.common.RecipeConflicts;
-import com.mas6y6.configureablecrushingwheel.common.packets.SetConfigurationPacket;
-import com.mas6y6.configureablecrushingwheel.common.packets.SetMillstoneConfigurationPacket;
+import com.mas6y6.configureablecrushingwheel.common.packets.ServerBoundSetMillstoneConfigurationPacket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;
 import net.minecraft.client.Minecraft;
@@ -83,7 +81,7 @@ public class ConfigureMillstoneScreenRecipe extends Screen {
 
             if (config != null) {
                 config.removeConfig(BuiltInRegistries.ITEM.getKey(this.itemStack.getItem()));
-                PacketDistributor.sendToServer(new SetMillstoneConfigurationPacket(config));
+                PacketDistributor.sendToServer(new ServerBoundSetMillstoneConfigurationPacket(config));
             }
         }).setUV(0,36).setUVHover(18,36).setPressed(36,36).setTooltip(Component.translatable("gui.configureablecrushingwheel.reset_recipe"));
 
@@ -102,7 +100,7 @@ public class ConfigureMillstoneScreenRecipe extends Screen {
 
             if (config != null) {
                 config.setConfig(BuiltInRegistries.ITEM.getKey(this.itemStack.getItem()), (ResourceLocation) ctx.id());
-                PacketDistributor.sendToServer(new SetMillstoneConfigurationPacket(config));
+                PacketDistributor.sendToServer(new ServerBoundSetMillstoneConfigurationPacket(config));
             }
         });
 
@@ -172,8 +170,8 @@ public class ConfigureMillstoneScreenRecipe extends Screen {
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();
         poseStack.translate(this.leftPos + 210, this.topPos + 140, 0);
-        poseStack.scale(2.5f, 2.5f, 1f);
-        graphics.renderItem(AllBlocks.CRUSHING_WHEEL.asStack(), 0, 0);
+        poseStack.scale(2.5f, 2.5f, 2.5f);
+        graphics.renderItem(AllBlocks.MILLSTONE.asStack(), 0, 0);
         poseStack.popPose();
 
         graphics.renderComponentTooltip(font, List.of(), mouseX, mouseY);

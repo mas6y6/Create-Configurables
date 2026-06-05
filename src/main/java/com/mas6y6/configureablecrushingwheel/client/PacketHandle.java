@@ -12,11 +12,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.List;
 
 public class PacketHandle {
-    public static void OpenRecipeGui(OpenCrushingWheelRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+    public static void OpenRecipeGui(ClientBoundOpenCrushingWheelRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
         Minecraft.getInstance().setScreen(new ConfigureCrushingWheelScreenMain(packet.uuid()));
     }
 
-    public static void getConflictingRecipesResponsePacket(GetConflictingRecipesResponsePacket packet, IPayloadContext iPayloadContext) {
+    public static void getConflictingRecipesResponsePacket(ClientBoundGetConflictingRecipesResponsePacket packet, IPayloadContext iPayloadContext) {
         if (Minecraft.getInstance().screen instanceof ConfigureCrushingWheelScreenMain screen) {
             screen.noConflict = packet.recipeConflicts().recipes.isEmpty();
             screen.scrollList.clear();
@@ -52,7 +52,7 @@ public class PacketHandle {
         }
     }
 
-    public static void GetCrushingWheelConfigResponsePacket(GetCrushingWheelConfigResponsePacket packet, IPayloadContext iPayloadContext) {
+    public static void GetCrushingWheelConfigResponsePacket(ClientBoundGetCrushingWheelConfigResponsePacket packet, IPayloadContext iPayloadContext) {
         if (Minecraft.getInstance().screen instanceof ConfigureCrushingWheelScreenMain screen) {
             screen.config = packet.config();
             screen.applyResolvedConflictHighlights();
@@ -62,11 +62,11 @@ public class PacketHandle {
         }
     }
 
-    public static void OpenMillstoneRecipeGuiPacket(OpenMillstoneRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+    public static void OpenMillstoneRecipeGuiPacket(ClientBoundOpenMillstoneRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
         Minecraft.getInstance().setScreen(new ConfigureMillstoneScreenMain(packet.uuid()));
     }
 
-    public static void GetMillingWheelConfigResponsePacket(GetMillstoneWheelConfigResponsePacket packet, IPayloadContext iPayloadContext) {
+    public static void GetMillingWheelConfigResponsePacket(ClientBoundGetMillstoneWheelConfigResponsePacket packet, IPayloadContext iPayloadContext) {
         if (Minecraft.getInstance().screen instanceof ConfigureMillstoneScreenMain screen) {
             screen.config = packet.config();
             screen.applyResolvedConflictHighlights();

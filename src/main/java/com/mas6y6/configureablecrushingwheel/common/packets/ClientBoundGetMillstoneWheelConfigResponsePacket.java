@@ -10,16 +10,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public record GetMillstoneWheelConfigResponsePacket(UUID uuid, MillstoneConfig config) implements CustomPacketPayload {
-    public static final Type<GetMillstoneWheelConfigResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_millstone_config_response"));
+public record ClientBoundGetMillstoneWheelConfigResponsePacket(UUID uuid, MillstoneConfig config) implements CustomPacketPayload {
+    public static final Type<ClientBoundGetMillstoneWheelConfigResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_millstone_config_response"));
 
-    public static final StreamCodec<FriendlyByteBuf, GetMillstoneWheelConfigResponsePacket> STREAM_CODEC = StreamCodec.of(
+    public static final StreamCodec<FriendlyByteBuf, ClientBoundGetMillstoneWheelConfigResponsePacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet ) -> {
                 buf.writeUUID(packet.uuid);
                 MillstoneConfig.STREAM_CODEC.encode(buf, packet.config);
             },
             (buf) -> {
-                return new GetMillstoneWheelConfigResponsePacket(buf.readUUID(),MillstoneConfig.STREAM_CODEC.decode(buf));
+                return new ClientBoundGetMillstoneWheelConfigResponsePacket(buf.readUUID(),MillstoneConfig.STREAM_CODEC.decode(buf));
             }
     );
     @Override

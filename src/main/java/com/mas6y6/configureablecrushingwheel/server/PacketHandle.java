@@ -22,7 +22,7 @@ import java.util.*;
 
 
 public class PacketHandle {
-    public static void GetConflictingRecipesPacket(GetCrushingConflictingRecipesPacket packet, IPayloadContext ctx) {
+    public static void GetConflictingRecipesPacket(ServerBoundGetCrushingConflictingRecipesPacket packet, IPayloadContext ctx) {
         if (ctx.player().level().isClientSide()) return;
 
         ServerPlayer player = (ServerPlayer) ctx.player();
@@ -63,10 +63,10 @@ public class PacketHandle {
         });
 
         PacketDistributor.sendToPlayer(player,
-                new GetConflictingRecipesResponsePacket(conflicts));
+                new ClientBoundGetConflictingRecipesResponsePacket(conflicts));
     }
 
-    public static void GetCrushingWheelConfigPacket(GetCrushingWheelConfigPacket packet, IPayloadContext iPayloadContext) {
+    public static void GetCrushingWheelConfigPacket(ServerBoundGetCrushingWheelConfigPacket packet, IPayloadContext iPayloadContext) {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();
@@ -74,11 +74,11 @@ public class PacketHandle {
 
         PacketDistributor.sendToPlayer(
                 (ServerPlayer) iPayloadContext.player(),
-                new GetCrushingWheelConfigResponsePacket(packet.uuid(),data.getCrushingWheel(packet.uuid()))
+                new ClientBoundGetCrushingWheelConfigResponsePacket(packet.uuid(),data.getCrushingWheel(packet.uuid()))
         );
     }
 
-    public static void SetConfigurationPacket(SetConfigurationPacket packet, IPayloadContext iPayloadContext) {
+    public static void SetConfigurationPacket(ServerBoundSetConfigurationPacket packet, IPayloadContext iPayloadContext) {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();
@@ -92,7 +92,7 @@ public class PacketHandle {
         data.putCrushingWheel(packet.config().uuid, packet.config());
     }
 
-    public static void SetMillstoneConfigurationPacket(SetMillstoneConfigurationPacket packet, IPayloadContext iPayloadContext) {
+    public static void SetMillstoneConfigurationPacket(ServerBoundSetMillstoneConfigurationPacket packet, IPayloadContext iPayloadContext) {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();
@@ -106,7 +106,7 @@ public class PacketHandle {
         data.putMillstone(packet.config().uuid, packet.config());
     }
 
-    public static void GetMillingConflictingRecipesPacket(GetMillstoneConflictingRecipesPacket packet, IPayloadContext ctx) {
+    public static void GetMillingConflictingRecipesPacket(ServerBoundGetMillstoneConflictingRecipesPacket packet, IPayloadContext ctx) {
         if (ctx.player().level().isClientSide()) return;
 
         ServerPlayer player = (ServerPlayer) ctx.player();
@@ -147,10 +147,10 @@ public class PacketHandle {
         });
 
         PacketDistributor.sendToPlayer(player,
-                new GetConflictingRecipesResponsePacket(conflicts));
+                new ClientBoundGetConflictingRecipesResponsePacket(conflicts));
     }
 
-    public static void GetMillingWheelConfigPacket(GetMillstoneConfigPacket packet, IPayloadContext iPayloadContext) {
+    public static void GetMillingWheelConfigPacket(ServerBoundGetMillstoneConfigPacket packet, IPayloadContext iPayloadContext) {
         if (iPayloadContext.player().level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) iPayloadContext.player().level();
@@ -158,7 +158,7 @@ public class PacketHandle {
 
         PacketDistributor.sendToPlayer(
                 (ServerPlayer) iPayloadContext.player(),
-                new GetMillstoneWheelConfigResponsePacket(packet.uuid(),data.getMillstone(packet.uuid()))
+                new ClientBoundGetMillstoneWheelConfigResponsePacket(packet.uuid(),data.getMillstone(packet.uuid()))
         );
     }
 }

@@ -10,16 +10,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public record GetCrushingWheelConfigResponsePacket(UUID uuid, CrushingWheelsConfig config) implements CustomPacketPayload {
-    public static final Type<GetCrushingWheelConfigResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_crushing_wheel_config_response"));
+public record ClientBoundGetCrushingWheelConfigResponsePacket(UUID uuid, CrushingWheelsConfig config) implements CustomPacketPayload {
+    public static final Type<ClientBoundGetCrushingWheelConfigResponsePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Configureablecrushingwheel.MODID, "get_crushing_wheel_config_response"));
 
-    public static final StreamCodec<FriendlyByteBuf, GetCrushingWheelConfigResponsePacket> STREAM_CODEC = StreamCodec.of(
+    public static final StreamCodec<FriendlyByteBuf, ClientBoundGetCrushingWheelConfigResponsePacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet ) -> {
                 buf.writeUUID(packet.uuid);
                 CrushingWheelsConfig.STREAM_CODEC.encode(buf, packet.config);
             },
             (buf) -> {
-                return new GetCrushingWheelConfigResponsePacket(buf.readUUID(),CrushingWheelsConfig.STREAM_CODEC.decode(buf));
+                return new ClientBoundGetCrushingWheelConfigResponsePacket(buf.readUUID(),CrushingWheelsConfig.STREAM_CODEC.decode(buf));
             }
     );
     @Override

@@ -33,21 +33,21 @@ public class Configureablecrushingwheel {
     public void registerNetworkPayload(RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar payloadRegistrar = event.registrar("1");
 
-        payloadRegistrar.playToClient(OpenCrushingWheelRecipeGuiPacket.TYPE, OpenCrushingWheelRecipeGuiPacket.STREAM_CODEC, PacketHandler::OpenRecipeGuiPacket);
-        payloadRegistrar.playToClient(OpenMillstoneRecipeGuiPacket.TYPE, OpenMillstoneRecipeGuiPacket.STREAM_CODEC, PacketHandler::OpenMillstoneRecipeGuiPacket);
+        payloadRegistrar.playToClient(ClientBoundOpenCrushingWheelRecipeGuiPacket.TYPE, ClientBoundOpenCrushingWheelRecipeGuiPacket.STREAM_CODEC, PacketHandler::OpenRecipeGuiPacket);
+        payloadRegistrar.playToClient(ClientBoundOpenMillstoneRecipeGuiPacket.TYPE, ClientBoundOpenMillstoneRecipeGuiPacket.STREAM_CODEC, PacketHandler::OpenMillstoneRecipeGuiPacket);
 
-        payloadRegistrar.playToServer(GetCrushingConflictingRecipesPacket.TYPE, GetCrushingConflictingRecipesPacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesPacket);
-        payloadRegistrar.playToServer(GetMillstoneConflictingRecipesPacket.TYPE, GetMillstoneConflictingRecipesPacket.STREAM_CODEC, PacketHandler::GetMillingConflictingRecipesPacket);
+        payloadRegistrar.playToServer(ServerBoundGetCrushingConflictingRecipesPacket.TYPE, ServerBoundGetCrushingConflictingRecipesPacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesPacket);
+        payloadRegistrar.playToServer(ServerBoundGetMillstoneConflictingRecipesPacket.TYPE, ServerBoundGetMillstoneConflictingRecipesPacket.STREAM_CODEC, PacketHandler::GetMillingConflictingRecipesPacket);
 
-        payloadRegistrar.playToClient(GetConflictingRecipesResponsePacket.TYPE,GetConflictingRecipesResponsePacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesResponsePacket);
+        payloadRegistrar.playToClient(ClientBoundGetConflictingRecipesResponsePacket.TYPE, ClientBoundGetConflictingRecipesResponsePacket.STREAM_CODEC, PacketHandler::GetConflictingRecipesResponsePacket);
 
-        payloadRegistrar.playToServer(GetCrushingWheelConfigPacket.TYPE,GetCrushingWheelConfigPacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigPacket);
-        payloadRegistrar.playToClient(GetCrushingWheelConfigResponsePacket.TYPE,GetCrushingWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigResponsePacket);
+        payloadRegistrar.playToServer(ServerBoundGetCrushingWheelConfigPacket.TYPE, ServerBoundGetCrushingWheelConfigPacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigPacket);
+        payloadRegistrar.playToClient(ClientBoundGetCrushingWheelConfigResponsePacket.TYPE, ClientBoundGetCrushingWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetCrushingWheelConfigResponsePacket);
 
-        payloadRegistrar.playToServer(GetMillstoneConfigPacket.TYPE, GetMillstoneConfigPacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigPacket);
-        payloadRegistrar.playToClient(GetMillstoneWheelConfigResponsePacket.TYPE, GetMillstoneWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigResponsePacket);
+        payloadRegistrar.playToServer(ServerBoundGetMillstoneConfigPacket.TYPE, ServerBoundGetMillstoneConfigPacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigPacket);
+        payloadRegistrar.playToClient(ClientBoundGetMillstoneWheelConfigResponsePacket.TYPE, ClientBoundGetMillstoneWheelConfigResponsePacket.STREAM_CODEC, PacketHandler::GetMillingWheelConfigResponsePacket);
 
-        payloadRegistrar.playToServer(SetConfigurationPacket.TYPE,SetConfigurationPacket.STREAM_CODEC, PacketHandler::SetConfigurationPacket);
-        payloadRegistrar.playToServer(SetMillstoneConfigurationPacket.TYPE,SetMillstoneConfigurationPacket.STREAM_CODEC, PacketHandler::SetMillstoneConfigurationPacket);
+        payloadRegistrar.playToServer(ServerBoundSetConfigurationPacket.TYPE, ServerBoundSetConfigurationPacket.STREAM_CODEC, PacketHandler::SetConfigurationPacket);
+        payloadRegistrar.playToServer(ServerBoundSetMillstoneConfigurationPacket.TYPE, ServerBoundSetMillstoneConfigurationPacket.STREAM_CODEC, PacketHandler::SetMillstoneConfigurationPacket);
     }
 }
