@@ -1,6 +1,7 @@
 package com.mas6y6.configureablecrushingwheel.server.world;
 
 import com.mas6y6.configureablecrushingwheel.common.CrushingWheelsConfig;
+import com.mas6y6.configureablecrushingwheel.common.ItemDrainConfig;
 import com.mas6y6.configureablecrushingwheel.common.MillstoneConfig;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -16,9 +17,11 @@ import java.util.UUID;
 public class WorldData extends SavedData {
     private static final String CRUSHING_WHEELS_TAG = "configured_crushing_wheels";
     private static final String MILLSTONES_TAG = "configured_millstones";
+    private static final String ITEM_DRAINS_TAG = "configured_item_drains";
 
     private final Map<UUID, CrushingWheelsConfig> configuredCrushingWheels = new HashMap<>();
     private final Map<UUID, MillstoneConfig> configuredMillstones = new HashMap<>();
+    private final Map<UUID, ItemDrainConfig> configuredItemDrains = new HashMap<>();
 
     public static WorldData create() {
         return new WorldData();
@@ -28,6 +31,7 @@ public class WorldData extends SavedData {
     public @NotNull CompoundTag save(@NotNull CompoundTag compoundTag, HolderLookup.@NotNull Provider provider) {
         compoundTag.put(CRUSHING_WHEELS_TAG, saveConfigMap(configuredCrushingWheels));
         compoundTag.put(MILLSTONES_TAG, saveConfigMap(configuredMillstones));
+        compoundTag.put(ITEM_DRAINS_TAG, saveConfigMap(configuredItemDrains));
         return compoundTag;
     }
 
@@ -35,6 +39,7 @@ public class WorldData extends SavedData {
         WorldData data = new WorldData();
         loadConfigMap(tag.getCompound(CRUSHING_WHEELS_TAG), data.configuredCrushingWheels, CrushingWheelsConfig::new);
         loadConfigMap(tag.getCompound(MILLSTONES_TAG), data.configuredMillstones, MillstoneConfig::new);
+        loadConfigMap(tag.getCompound(ITEM_DRAINS_TAG), data.configuredItemDrains, ItemDrainConfig::new);
 
         return data;
     }
@@ -65,6 +70,20 @@ public class WorldData extends SavedData {
 
     public MillstoneConfig getMillstone(UUID uuid) {
         return getConfig(configuredMillstones, uuid, MillstoneConfig::new);
+    }
+
+    public void putItemDrain(UUID uuid, ItemDrainConfig config) {
+        configuredItemDrains.put(uuid, config);
+        setDirty();
+    }
+
+    public void removeItemDrain(UUID uuid) {
+        configuredItemDrains.remove(uuid);
+        setDirty();
+    }
+
+    public ItemDrainConfig getItemDrain(UUID uuid) {
+        return getConfig(configuredItemDrains, uuid, ItemDrainConfig::new);
     }
 
     public static WorldData get(ServerLevel level) {
@@ -123,6 +142,10 @@ public class WorldData extends SavedData {
 
         if (config instanceof MillstoneConfig millstoneConfig) {
             return millstoneConfig.config;
+        }
+
+        if (config instanceof ItemDrainConfig itemDrainConfig) {
+            return itemDrainConfig.config;
         }
 
         throw new IllegalArgumentException("Unsupported config type: " + config.getClass().getName());

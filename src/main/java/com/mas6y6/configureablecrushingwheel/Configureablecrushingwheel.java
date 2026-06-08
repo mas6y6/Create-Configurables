@@ -49,5 +49,11 @@ public class Configureablecrushingwheel {
 
         payloadRegistrar.playToServer(ServerBoundSetConfigurationPacket.TYPE, ServerBoundSetConfigurationPacket.STREAM_CODEC, PacketHandler::SetConfigurationPacket);
         payloadRegistrar.playToServer(ServerBoundSetMillstoneConfigurationPacket.TYPE, ServerBoundSetMillstoneConfigurationPacket.STREAM_CODEC, PacketHandler::SetMillstoneConfigurationPacket);
+
+        payloadRegistrar.playToClient(ClientBoundOpenItemDrainRecipeGuiPacket.TYPE, ClientBoundOpenItemDrainRecipeGuiPacket.STREAM_CODEC, PacketHandler::OpenItemDrainRecipeGuiPacket);
+        payloadRegistrar.playToServer(ServerBoundGetItemDrainConflictingRecipesPacket.TYPE, ServerBoundGetItemDrainConflictingRecipesPacket.STREAM_CODEC, PacketHandler::GetItemDrainConflictingRecipesPacket);
+        payloadRegistrar.playToServer(ServerBoundGetItemDrainConfigPacket.TYPE, ServerBoundGetItemDrainConfigPacket.STREAM_CODEC, PacketHandler::GetItemDrainConfigPacket);
+        payloadRegistrar.playToClient(ClientBoundGetItemDrainConfigResponsePacket.TYPE, ClientBoundGetItemDrainConfigResponsePacket.STREAM_CODEC, PacketHandler::GetItemDrainConfigResponsePacket);
+        payloadRegistrar.playToServer(ServerBoundSetItemDrainConfigurationPacket.TYPE, ServerBoundSetItemDrainConfigurationPacket.STREAM_CODEC, PacketHandler::SetItemDrainConfigurationPacket);
     }
 }

@@ -46,6 +46,36 @@ public class PacketHandler {
         });
     }
 
+    public static void OpenItemDrainRecipeGuiPacket(ClientBoundOpenItemDrainRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.client.PacketHandle.OpenItemDrainRecipeGui(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetItemDrainConflictingRecipesPacket(ServerBoundGetItemDrainConflictingRecipesPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetItemDrainConflictingRecipesPacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetItemDrainConfigPacket(ServerBoundGetItemDrainConfigPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.GetItemDrainConfigPacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void GetItemDrainConfigResponsePacket(ClientBoundGetItemDrainConfigResponsePacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.client.PacketHandle.GetItemDrainConfigResponsePacket(packet, iPayloadContext);
+        });
+    }
+
+    public static void SetItemDrainConfigurationPacket(ServerBoundSetItemDrainConfigurationPacket packet, IPayloadContext iPayloadContext) {
+        iPayloadContext.enqueueWork(() -> {
+            com.mas6y6.configureablecrushingwheel.server.PacketHandle.SetItemDrainConfigurationPacket(packet, iPayloadContext);
+        });
+    }
+
     public static void OpenMillstoneRecipeGuiPacket(ClientBoundOpenMillstoneRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
         iPayloadContext.enqueueWork(() -> {
             com.mas6y6.configureablecrushingwheel.client.PacketHandle.OpenMillstoneRecipeGuiPacket(packet, iPayloadContext);

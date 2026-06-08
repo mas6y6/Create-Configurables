@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +44,7 @@ public class SimpleScrollList extends AbstractWidget {
             Object id,
             Component text,
             List<ItemStack> items,
+            List<FluidStack> fluids,
             List<ResourceLocation> textures,
             float itemScale,
             boolean showText,
@@ -53,12 +55,12 @@ public class SimpleScrollList extends AbstractWidget {
             Consumer<EntryContext> onClick
     ) {
         public Entry withBackgroundColor(int color) {
-            return new Entry(id, text, items, textures, itemScale, showText,
+            return new Entry(id, text, items, fluids, textures, itemScale, showText,
                     height, background, color, tooltip, onClick);
         }
 
         public Entry withHeight(int newHeight) {
-            return new Entry(id, text, items, textures, itemScale, showText,
+            return new Entry(id, text, items, fluids, textures, itemScale, showText,
                     newHeight, background, backgroundColor, tooltip, onClick);
         }
     }
@@ -292,24 +294,64 @@ public class SimpleScrollList extends AbstractWidget {
                         bgColor);
             }
 
-            // items
-            if (entry.items() != null) {
+            // items, fluids and textures
+            int itemCount = 0;
+            if (entry.items() != null) itemCount += entry.items().size();
+            if (entry.fluids() != null) itemCount += entry.fluids().size();
+            if (entry.textures() != null) itemCount += entry.textures().size();
+
+            if (itemCount > 0) {
                 float scale = entry.itemScale();
                 int size = (int) (16 * scale);
 
                 Minecraft mc = Minecraft.getInstance();
 
-                for (int i = 0; i < entry.items().size(); i++) {
-                    ItemStack stack = entry.items().get(i);
+                int currentXOffset = 0;
 
-                    gg.pose().pushPose();
-                    gg.pose().translate(getX() + 4 + i * (size + 2), currentY + 2, 0);
-                    gg.pose().scale(scale, scale, 1);
+                if (entry.items() != null) {
+                    for (int i = 0; i < entry.items().size(); i++) {
+                        ItemStack stack = entry.items().get(i);
 
-                    gg.renderItem(stack, 0, 0);
-                    gg.renderItemDecorations(mc.font, stack, 0, 0);
+                        gg.pose().pushPose();
+                        gg.pose().translate(getX() + 4 + currentXOffset, currentY + 2, 0);
+                        gg.pose().scale(scale, scale, 1);
 
-                    gg.pose().popPose();
+                        gg.renderItem(stack, 0, 0);
+                        gg.renderItemDecorations(mc.font, stack, 0, 0);
+
+                        gg.pose().popPose();
+                        currentXOffset += size + 2;
+                    }
+                }
+
+                if (entry.fluids() != null) {
+                    for (int i = 0; i < entry.fluids().size(); i++) {
+                        FluidStack stack = entry.fluids().get(i);
+                        net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions extensions = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(stack.getFluid());
+                        ResourceLocation stillTexture = extensions.getStillTexture(stack);
+                        if (stillTexture != null) {
+                            net.minecraft.client.renderer.texture.TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS).apply(stillTexture);
+                            int color = extensions.getTintColor(stack);
+                            float r = ((color >> 16) & 0xFF) / 255f;
+                            float g = ((color >> 8) & 0xFF) / 255f;
+                            float b = (color & 0xFF) / 255f;
+                            float a = ((color >> 24) & 0xFF) / 255f;
+
+                            gg.setColor(r, g, b, a);
+                            gg.blit(getX() + 4 + currentXOffset, currentY + 2, 0, (int)(16 * scale), (int)(16 * scale), sprite);
+                            gg.setColor(1f, 1f, 1f, 1f);
+                        }
+                        currentXOffset += size + 2;
+                    }
+                }
+
+                if (entry.textures() != null) {
+                    for (int i = 0; i < entry.textures().size(); i++) {
+                        ResourceLocation texture = entry.textures().get(i);
+
+                        gg.blit(texture, getX() + 4 + currentXOffset, currentY + 2, 0, 0, size, size, size, size);
+                        currentXOffset += size + 2;
+                    }
                 }
             }
 
@@ -323,9 +365,9 @@ public class SimpleScrollList extends AbstractWidget {
                         font.split(entry.text(), maxWidth);
 
                 int textX = getX() + 6;
-                if (entry.items() != null && !entry.items().isEmpty()) {
+                if (itemCount > 0) {
                     int itemSize = (int) (16 * entry.itemScale());
-                    textX += entry.items().size() * (itemSize + 2) + 2;
+                    textX += itemCount * (itemSize + 2) + 2;
                 }
 
                 int textHeight = lines.size() * 10;
@@ -568,16 +610,26 @@ public class SimpleScrollList extends AbstractWidget {
         int rowWidth = contentWidth() - 2;
         int itemWidth = 0;
 
-        if (entry.items() != null && !entry.items().isEmpty()) {
+        int itemCount = 0;
+        if (entry.items() != null) itemCount += entry.items().size();
+        if (entry.fluids() != null) itemCount += entry.fluids().size();
+        if (entry.textures() != null) itemCount += entry.textures().size();
+
+        if (itemCount > 0) {
             int itemSize = (int) (16 * entry.itemScale());
-            itemWidth = entry.items().size() * (itemSize + 2) + 2;
+            itemWidth = itemCount * (itemSize + 2) + 2;
         }
 
         return Math.max(20, rowWidth - 10 - itemWidth);
     }
 
     private int calculateEntryHeight(Entry entry) {
-        int itemHeight = entry.items() != null && !entry.items().isEmpty()
+        int itemCount = 0;
+        if (entry.items() != null) itemCount += entry.items().size();
+        if (entry.fluids() != null) itemCount += entry.fluids().size();
+        if (entry.textures() != null) itemCount += entry.textures().size();
+
+        int itemHeight = itemCount > 0
                 ? (int) (16 * entry.itemScale()) + 4
                 : 4;
 
@@ -620,6 +672,8 @@ public class SimpleScrollList extends AbstractWidget {
 
         private Component text = Component.empty();
         private List<ItemStack> items = List.of();
+        private List<FluidStack> fluids = List.of();
+        private List<ResourceLocation> textures = List.of();
         private float scale = 1f;
         private boolean showText = true;
         private int bgColor = 0;
@@ -632,6 +686,8 @@ public class SimpleScrollList extends AbstractWidget {
 
         public EntryBuilder text(Component t) { this.text = t; return this; }
         public EntryBuilder items(List<ItemStack> i) { this.items = i; return this; }
+        public EntryBuilder fluids(List<FluidStack> f) { this.fluids = f; return this; }
+        public EntryBuilder textures(List<ResourceLocation> t) { this.textures = t; return this; }
         public EntryBuilder itemScale(float s) { this.scale = s; return this; }
         public EntryBuilder backgroundColor(int c) { this.bgColor = c; return this; }
 
@@ -642,7 +698,7 @@ public class SimpleScrollList extends AbstractWidget {
 
         public void add() {
             Entry entry = new Entry(
-                    id, text, items, List.of(),
+                    id, text, items, fluids, textures,
                     scale, showText, 0,
                     null, bgColor, List.of(),
                     onClick

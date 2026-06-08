@@ -1,8 +1,10 @@
 package com.mas6y6.configureablecrushingwheel.client;
 
 import com.mojang.logging.LogUtils;
+import com.simibubi.create.content.fluids.drain.ItemDrainBlockEntity;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelControllerBlockEntity;
 import com.simibubi.create.content.kinetics.millstone.MillstoneBlockEntity;
+import net.createmod.catnip.outliner.LineOutline;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -40,6 +42,7 @@ public class ConfigureablecrushingwheelClient {
     public void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
+        if (!mc.player.getMainHandItem().isEmpty()) return;
 
         LocalPlayer player = mc.player;
         ClientLevel level = mc.level;
@@ -69,6 +72,15 @@ public class ConfigureablecrushingwheelClient {
 
             if (level.getBlockEntity(pos) instanceof MillstoneBlockEntity entity) {
                 Outliner.getInstance().showAABB(entity, AABB.encapsulatingFullBlocks(pos,pos))
+                        .disableLineNormals()
+                        .colored(0x5999ff)
+                        .lineWidth(1 / 55f);
+            }
+
+            if (level.getBlockEntity(pos) instanceof ItemDrainBlockEntity entity) {
+                BlockState blockState = level.getBlockState(pos);
+                AABB shapeAABB = blockState.getShape(level, pos).bounds().move(pos);
+                Outliner.getInstance().showAABB(entity, shapeAABB)
                         .disableLineNormals()
                         .colored(0x5999ff)
                         .lineWidth(1 / 55f);

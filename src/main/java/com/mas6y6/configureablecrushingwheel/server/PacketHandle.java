@@ -161,4 +161,66 @@ public class PacketHandle {
                 new ClientBoundGetMillstoneWheelConfigResponsePacket(packet.uuid(),data.getMillstone(packet.uuid()))
         );
     }
+
+    public static void GetItemDrainConflictingRecipesPacket(ServerBoundGetItemDrainConflictingRecipesPacket packet, IPayloadContext ctx) {
+        if (ctx.player().level().isClientSide()) return;
+
+        ServerPlayer player = (ServerPlayer) ctx.player();
+        ServerLevel level = player.serverLevel();
+        RecipeManager manager = level.getRecipeManager();
+
+        RecipeConflicts conflicts = new RecipeConflicts();
+        Map<Item, Set<ResourceLocation>> itemToRecipes = new HashMap<>();
+
+        for (var holder : manager.getAllRecipesFor(AllRecipeTypes.EMPTYING.getType())) {
+            if (holder.value().getIngredients().isEmpty()) continue;
+            Ingredient ingredient = holder.value().getIngredients().getFirst();
+
+            for (ItemStack stack : ingredient.getItems()) {
+                itemToRecipes
+                        .computeIfAbsent(stack.getItem(), i -> new HashSet<>())
+                        .add(holder.id());
+            }
+
+            conflicts.inputs.put(holder.id(), ingredient.getItems()[0]);
+            conflicts.outputs.put(holder.id(), List.of(holder.value().getResultItem(level.registryAccess())));
+            if ((Object) holder.value() instanceof com.simibubi.create.content.fluids.transfer.EmptyingRecipe emptyingRecipe) {
+                conflicts.fluidOutputs.put(holder.id(), emptyingRecipe.getFluidResults());
+            }
+        }
+
+        itemToRecipes.forEach((item, recipes) -> {
+            if (recipes.size() > 1) {
+                conflicts.addConflict(item, new ArrayList<>(recipes));
+            }
+        });
+
+        PacketDistributor.sendToPlayer(player, new ClientBoundGetConflictingRecipesResponsePacket(conflicts));
+    }
+
+    public static void GetItemDrainConfigPacket(ServerBoundGetItemDrainConfigPacket packet, IPayloadContext iPayloadContext) {
+        if (iPayloadContext.player().level().isClientSide()) return;
+
+        ServerLevel level = (ServerLevel) iPayloadContext.player().level();
+        WorldData data = WorldData.get(level);
+
+        PacketDistributor.sendToPlayer(
+                (ServerPlayer) iPayloadContext.player(),
+                new ClientBoundGetItemDrainConfigResponsePacket(packet.uuid(), data.getItemDrain(packet.uuid()))
+        );
+    }
+
+    public static void SetItemDrainConfigurationPacket(ServerBoundSetItemDrainConfigurationPacket packet, IPayloadContext iPayloadContext) {
+        if (iPayloadContext.player().level().isClientSide()) return;
+
+        ServerLevel level = (ServerLevel) iPayloadContext.player().level();
+        WorldData data = WorldData.get(level);
+
+        if (packet.config().config.isEmpty()) {
+            data.removeItemDrain(packet.config().uuid);
+            return;
+        }
+
+        data.putItemDrain(packet.config().uuid, packet.config());
+    }
 }

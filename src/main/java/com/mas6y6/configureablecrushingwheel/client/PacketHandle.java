@@ -2,6 +2,8 @@ package com.mas6y6.configureablecrushingwheel.client;
 
 import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureCrushingWheelScreenMain;
 import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureCrushingWheelScreenRecipe;
+import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureItemDrainScreenMain;
+import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureItemDrainScreenRecipe;
 import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureMillstoneScreenMain;
 import com.mas6y6.configureablecrushingwheel.client.gui.ConfigureMillstoneScreenRecipe;
 import com.mas6y6.configureablecrushingwheel.common.packets.*;
@@ -49,6 +51,22 @@ public class PacketHandle {
             });
 
             screen.applyResolvedConflictHighlights();
+        } else if (Minecraft.getInstance().screen instanceof ConfigureItemDrainScreenMain screen) {
+            screen.noConflict = packet.recipeConflicts().recipes.isEmpty();
+            screen.scrollList.clear();
+            screen.recipeConflicts = packet.recipeConflicts();
+
+            packet.recipeConflicts().recipes.forEach((item, conflicts) -> {
+                MutableComponent text = item.getDescription().copy();
+                text.append(" (" + conflicts.size() + " recipes)");
+
+                screen.scrollList.entry(item.getDefaultInstance().getItem())
+                        .items(List.of(item.getDefaultInstance().getItem().getDefaultInstance()))
+                        .text(text)
+                        .add();
+            });
+
+            screen.applyResolvedConflictHighlights();
         }
     }
 
@@ -57,6 +75,20 @@ public class PacketHandle {
             screen.config = packet.config();
             screen.applyResolvedConflictHighlights();
         } else if (Minecraft.getInstance().screen instanceof ConfigureCrushingWheelScreenRecipe screen) {
+            screen.config = packet.config();
+            screen.applyConfiguredSelection();
+        }
+    }
+
+    public static void OpenItemDrainRecipeGui(ClientBoundOpenItemDrainRecipeGuiPacket packet, IPayloadContext iPayloadContext) {
+        Minecraft.getInstance().setScreen(new ConfigureItemDrainScreenMain(packet.uuid()));
+    }
+
+    public static void GetItemDrainConfigResponsePacket(ClientBoundGetItemDrainConfigResponsePacket packet, IPayloadContext iPayloadContext) {
+        if (Minecraft.getInstance().screen instanceof ConfigureItemDrainScreenMain screen) {
+            screen.config = packet.config();
+            screen.applyResolvedConflictHighlights();
+        } else if (Minecraft.getInstance().screen instanceof ConfigureItemDrainScreenRecipe screen) {
             screen.config = packet.config();
             screen.applyConfiguredSelection();
         }
