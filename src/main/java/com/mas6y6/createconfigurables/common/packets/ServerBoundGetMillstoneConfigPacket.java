@@ -1,0 +1,27 @@
+package com.mas6y6.createconfigurables.common.packets;
+
+import com.mas6y6.createconfigurables.CreateConfigurables;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
+
+public record ServerBoundGetMillstoneConfigPacket(UUID uuid) implements CustomPacketPayload {
+    public static final Type<ServerBoundGetMillstoneConfigPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(CreateConfigurables.MODID, "get_milling_wheel_config"));
+
+    public static final StreamCodec<FriendlyByteBuf, ServerBoundGetMillstoneConfigPacket> STREAM_CODEC = StreamCodec.of(
+            (buf, packet ) -> {
+                buf.writeUUID(packet.uuid);
+            },
+            (buf) -> {
+                return new ServerBoundGetMillstoneConfigPacket(buf.readUUID());
+            }
+    );
+    @Override
+    public @NotNull Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+}

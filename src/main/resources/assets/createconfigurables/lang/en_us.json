@@ -1,0 +1,19 @@
+{
+  "itemGroup.createconfigurables": "Example Mod Tab",
+  "block.createconfigurables.example_block": "Example Block",
+  "item.createconfigurables.example_item": "Example Item",
+  "message.createconfigurables.link_failed": "Cannot link these crushing wheels",
+  "message.createconfigurables.already_linked": "This crushing wheel is already linked to another crushing wheel!",
+  "gui.createconfigurables.title": "Configure Crushing Wheels",
+  "gui.createconfigurables.conflicting_text": "Conflicting Recipes",
+  "gui.createconfigurables.no_conflict": "There are no conflicts. Lucky you!",
+  "gui.createconfigurables.conflicting_recipes": "Conflicting Recipes for %s:",
+  "gui.createconfigurables.select_recipe": "Select Recipe",
+  "gui.createconfigurables.configure": "Configure",
+  "gui.createconfigurables.search_box": "Search",
+  "gui.createconfigurables.back": "Back to previous menu",
+  "gui.createconfigurables.reset_recipe": "Reset this config",
+  "gui.createconfigurables.reset_config": "Reset all configuration",
+  "gui.createmillstone.title": "Configure Millstone",
+  "gui.createitemdrain.title": "Configure Item Drain"
+}
